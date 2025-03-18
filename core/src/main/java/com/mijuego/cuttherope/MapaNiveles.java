@@ -32,8 +32,10 @@ public class MapaNiveles extends ScreenAdapter {
     private Skin skin;
     private TextButton level1Button, level2Button, level3Button, level4Button, level5Button, exitButton;
     private Texture background;
+    private Usuarios jugador;
 
-    public MapaNiveles() {
+    public MapaNiveles(Usuarios jugador) {
+        this.jugador = jugador;
     }
 
     @Override
@@ -66,7 +68,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 2
-                //((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2Screen());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2());
             }
         });
 

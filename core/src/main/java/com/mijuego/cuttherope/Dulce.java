@@ -7,6 +7,7 @@ package com.mijuego.cuttherope;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -17,17 +18,20 @@ import com.badlogic.gdx.physics.box2d.World;
  *
  * @author river
  */
-public class Dulce {
+public class Dulce implements Runnable{
 
     private Body body;
     private Sprite sprite;
     private Texture texture;
+    private boolean cayendo;
+    private final float GRAVEDAD = 9.8f;
+    private final float INTERVALO = 1 / 60f;
 
-    public Dulce(World world, int x, int y, float PIXELS_TO_METER) {
+    public Dulce(World world, int x, int y, float PIXELS_TO_METER, Texture texture) {
         // Cargar la textura del dulce
-        texture = new Texture("dulce1.png");
+        this.texture = texture;
 
-        sprite = new Sprite(new Texture("dulce1.png")); // Asegúrate de tener la textura
+        sprite = new Sprite(texture); // Asegúrate de tener la textura
         sprite.setSize(2, 2); // Ajusta el tamaño en función de los píxeles por metro
         sprite.setOriginCenter();
 
@@ -50,6 +54,8 @@ public class Dulce {
         body.createFixture(fixtureDef);
         body.setUserData(sprite);
         shape.dispose();
+        
+        cayendo = false;
     }
 
     public Body getBody() {
@@ -63,5 +69,36 @@ public class Dulce {
 
     public void dispose() {
         texture.dispose();
+    }
+    
+    public void cortar() {
+        cayendo = true;
+        Thread hiloCaida = new Thread(this);
+        hiloCaida.start();
+    }
+
+    @Override
+    public void run() {
+        while (cayendo && body != null) {
+            actualizarPosicion();
+            try {
+                Thread.sleep((long) (INTERVALO * 1000)); // Esperar para simular 60 FPS
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void actualizarPosicion() {
+        if (body != null) {
+            Vector2 velocidad = body.getLinearVelocity();
+            float nuevaVelocidadY = velocidad.y - GRAVEDAD * INTERVALO;
+
+            if (body.getPosition().y > -12) { // Suelo imaginario
+                body.setLinearVelocity(velocidad.x, nuevaVelocidadY);
+            } else {
+                cayendo = false; // Detiene la caída si llega al suelo
+            }
+        }
     }
 }

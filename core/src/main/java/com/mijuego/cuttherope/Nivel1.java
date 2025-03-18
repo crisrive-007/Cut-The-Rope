@@ -56,6 +56,7 @@ public class Nivel1 implements Screen {
     private Dulce dulce;
     private Cuerda cuerda;
     private Gancho gancho;
+    private CollisionDetector collisionDetector;
 
     private Texture fondoTextura;
     private Texture[] starTextures;
@@ -78,30 +79,6 @@ public class Nivel1 implements Screen {
 
         fondoTextura = new Texture("fondo_dulceria.jpg");
 
-        world.setContactListener(new ContactListener() {
-            @Override
-            public void beginContact(Contact contact) {
-                Fixture fixtureA = contact.getFixtureA();
-                Fixture fixtureB = contact.getFixtureB();
-
-                if (dulceTocoOmNom(fixtureA, fixtureB)) {
-                    omNomComio(omNom.getBody());
-                }
-            }
-
-            @Override
-            public void endContact(Contact contact) {
-            }
-
-            @Override
-            public void preSolve(Contact contact, Manifold oldManifold) {
-            }
-
-            @Override
-            public void postSolve(Contact contact, ContactImpulse impulse) {
-            }
-        });
-
         starTextures = new Texture[]{
             new Texture("estrella.png"),
             new Texture("estrella.png"),
@@ -118,7 +95,7 @@ public class Nivel1 implements Screen {
             starRectangles[i] = new Rectangle(starPositions[i].x - 1, starPositions[i].y - 1, 2, 2);
         }
 
-        omNom = new OmNom(world, 0, -12);
+        omNom = new OmNom(world, 0, -11);
 
         starCollected = new boolean[starTextures.length];
         for (int i = 0; i < starCollected.length; i++) {
@@ -130,21 +107,14 @@ public class Nivel1 implements Screen {
         camera.position.set(0, 0, 0);
         camera.update();
 
-        dulce = new Dulce(world, 0, 3, PIXELS_TO_METER);
-        gancho = new Gancho(world, 0, 10); // Gancho en la parte superior
+        dulce = new Dulce(world, 0, 3, PIXELS_TO_METER, new Texture("dulce1.png"));
+        gancho = new Gancho(world, 0, 10);
         cuerda = new Cuerda(world, dulce, gancho.getBody().getPosition(), 0.1f, 0.25f);
 
-        BodyDef bodyDef = new BodyDef();
-        FixtureDef fixtureDEF = new FixtureDef();
+        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana);
+        collisionDetector.start();
 
-        bodyDef.position.y = 12;
-        PolygonShape box = new PolygonShape();
-        box.setAsBox(.25f, .25f);
-        fixtureDEF.shape = box;
-
-        bodyBox = world.createBody(bodyDef);
-        bodyBox.createFixture(fixtureDEF);
-        box.dispose();
+        world.setContactListener(collisionDetector);
 
         Gdx.input.setInputProcessor(new InputAdapter() {
             public boolean touchDragged(int screenX, int screenY, int pointer) {
@@ -153,6 +123,7 @@ public class Nivel1 implements Screen {
                     if (cuerda != null) {
                         cuerda.cortar();
                     }
+
                 }
                 return true;
             }
@@ -238,10 +209,10 @@ public class Nivel1 implements Screen {
 
         // Dibujar los sprites
         batch.begin();
-        batch.draw(fondoTextura, -camera.viewportWidth / 2, -camera.viewportHeight / 2, camera.viewportWidth, camera.viewportHeight);
-        
+        //batch.draw(fondoTextura, -camera.viewportWidth / 2, -camera.viewportHeight / 2, camera.viewportWidth, camera.viewportHeight);
+
         cuerda.draw(batch);
-        
+
         // Dibujar el gancho
         gancho.draw(batch);
 
@@ -274,8 +245,10 @@ public class Nivel1 implements Screen {
                 if (fixture.getBody() == cuerda.getCuerpoCuerda()) {
                     // Si el rayo golpea el cuerpo de la cuerda, cortamos la cuerda
                     cuerda.cortar();
+                    dulce.cortar();
                     return 0;  // El rayo solo necesita golpear una vez, por lo que retornamos 0
                 }
+
                 return -1;  // No se encontró una colisión con la cuerda
             }
 
@@ -309,6 +282,9 @@ public class Nivel1 implements Screen {
     @Override
     public void hide() {
         dispose();
+        if (collisionDetector != null) {
+            collisionDetector.interrupt();
+        }
     }
 
     @Override
@@ -344,6 +320,10 @@ public class Nivel1 implements Screen {
         // Destruir el batch de sprites
         if (batch != null) {
             batch.dispose();
+        }
+
+        if (collisionDetector != null) {
+            collisionDetector.interrupt();
         }
     }
 }

@@ -4,6 +4,7 @@
  */
 package com.mijuego.cuttherope;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -174,6 +175,7 @@ public class CrearCuenta extends ScreenAdapter {
             // Mostrar mensaje de éxito
             messageLabel.setText("Cuenta creada exitosamente.");
             messageLabel.setColor(Color.GREEN);
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(nuevoUsuario));
         }
     }
 }

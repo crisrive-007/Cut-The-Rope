@@ -159,7 +159,7 @@ public class LoginScreen extends ScreenAdapter {
             messageLabel.setColor(Color.GREEN);
 
             // Proceder a la pantalla del juego
-            ((Game) Gdx.app.getApplicationListener()).setScreen(new MapaNiveles());
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(usuario));
         } else {
             messageLabel.setText("Usuario o contraseña incorrectos.");
             messageLabel.setColor(Color.RED);

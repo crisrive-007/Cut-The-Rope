@@ -6,6 +6,7 @@ package com.mijuego.cuttherope;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
@@ -24,7 +25,7 @@ public class Cuerda {
     private float longitud;
     private float thickness;
     private RopeJoint ropeJoint;
-    private boolean isCortada;  // Nueva variable para verificar si la cuerda ha sido cortada
+    private boolean isCortada;
 
     public Cuerda(World world, Dulce dulce, Vector2 ganchoPos, float longitud, float grosor) {
         this.world = world;
@@ -32,7 +33,7 @@ public class Cuerda {
         this.ganchoPos = ganchoPos;
         this.longitud = longitud;
         this.thickness = grosor;
-        this.isCortada = false;  // Inicialmente, la cuerda no está cortada
+        this.isCortada = false;
         crearCuerda();
     }
 
@@ -105,5 +106,29 @@ public class Cuerda {
             ropeJoint = null; // Marcamos que la cuerda ha sido cortada
             isCortada = true;  // Indicamos que la cuerda ya ha sido cortada
         }
+    }
+
+    public boolean detectarToque(Vector2 punteroPos) {
+        // Cálculo de la distancia entre el puntero y la cuerda
+        Vector2 dulcePos = dulce.getBody().getPosition();
+
+        // Calculamos la dirección de la cuerda
+        Vector2 cuerdaDir = new Vector2(dulcePos.x - ganchoPos.x, dulcePos.y - ganchoPos.y).nor();
+
+        // Proyectamos el puntero sobre la línea de la cuerda
+        Vector2 toPunterPos = new Vector2(punteroPos.x - ganchoPos.x, punteroPos.y - ganchoPos.y);
+        float proj = toPunterPos.dot(cuerdaDir);
+
+        // Limitar la proyección a la longitud de la cuerda
+        proj = MathUtils.clamp(proj, 0, ganchoPos.dst(dulcePos));
+
+        // Encontramos la distancia desde el puntero a la cuerda
+        Vector2 closestPoint = new Vector2(ganchoPos.x + cuerdaDir.x * proj, ganchoPos.y + cuerdaDir.y * proj);
+        float distance = closestPoint.dst(punteroPos);
+
+        // Umbral de detección (ajústalo según tus necesidades)
+        float umbralToque = 0.1f; // Distancia mínima para considerar un toque
+
+        return distance < umbralToque;
     }
 }
