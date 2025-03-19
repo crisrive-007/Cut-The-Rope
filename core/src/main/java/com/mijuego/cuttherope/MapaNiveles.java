@@ -60,7 +60,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 1
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel1());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel1(jugador));
             }
         });
 
@@ -68,7 +68,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 2
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador));
             }
         });
 

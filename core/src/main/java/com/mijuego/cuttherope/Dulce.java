@@ -24,6 +24,7 @@ public class Dulce implements Runnable{
     private Sprite sprite;
     private Texture texture;
     private boolean cayendo;
+    private boolean visible;
     private final float GRAVEDAD = 9.8f;
     private final float INTERVALO = 1 / 60f;
 
@@ -56,6 +57,7 @@ public class Dulce implements Runnable{
         shape.dispose();
         
         cayendo = false;
+        visible = true;
     }
 
     public Body getBody() {
@@ -63,18 +65,25 @@ public class Dulce implements Runnable{
     }
 
     public void draw(SpriteBatch batch) {
-        sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
-        sprite.draw(batch);
+        if (visible && sprite != null) {
+            sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
+            sprite.draw(batch);
+        }
     }
 
     public void dispose() {
-        texture.dispose();
+        if (texture != null) {
+            texture.dispose();
+            texture = null;
+        }
     }
     
     public void cortar() {
         cayendo = true;
         Thread hiloCaida = new Thread(this);
         hiloCaida.start();
+        visible = false; // Marcamos como no visible
+        dispose(); // Ahora llamamos a dispose para limpiar recursos
     }
 
     @Override

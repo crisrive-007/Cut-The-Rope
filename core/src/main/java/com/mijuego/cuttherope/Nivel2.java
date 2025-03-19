@@ -4,12 +4,14 @@
  */
 package com.mijuego.cuttherope;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -32,6 +34,7 @@ public class Nivel2 implements Screen {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
+    private Usuarios jugador;
 
     private final float TIMESTEP = 1 / 60f;
     private final int VELOCITYITERATIONS = 8, POSITIONITERATIONS = 3;
@@ -59,11 +62,22 @@ public class Nivel2 implements Screen {
     private Vector2[] starPositions;
     private Rectangle[] starRectangles;
     private boolean[] starCollected;
+    
+    private Texture pauseButtonTexture;
+    private Texture resetButtonTexture;
+    private Circle pauseButtonCircle;
+    private Circle resetButtonCircle;
+    private final float BUTTON_RADIUS = 1.0f; // Radio de los botones en unidades del mundo
+    private final float BUTTON_SPACING = 0.5f;
 
     private OmNom omNom;
     private Body bodyBox;
 
     private int puntos = 0;
+    
+    public Nivel2(Usuarios jugador) {
+        this.jugador = jugador;
+    }
 
     @Override
     public void show() {
@@ -74,6 +88,9 @@ public class Nivel2 implements Screen {
         debugRenderer = new Box2DDebugRenderer();
 
         fondoTextura = new Texture("fondo_rosquilleria.jpg");
+        
+        pauseButtonTexture = new Texture("boton-pausa.png");
+        resetButtonTexture = new Texture("boton-reinicio.png");
 
         starTextures = new Texture[]{
             new Texture("estrella.png"),
@@ -102,14 +119,20 @@ public class Nivel2 implements Screen {
                 Gdx.graphics.getHeight() / PIXELS_TO_METER);
         camera.position.set(0, 0, 0);
         camera.update();
+        
+        float topY = camera.viewportHeight / 2 - BUTTON_RADIUS - 0.5f; // Un poco de margen desde arriba
+        float leftX = -camera.viewportWidth / 2 + BUTTON_RADIUS + 0.5f;
+        
+        pauseButtonCircle = new Circle(leftX, topY, BUTTON_RADIUS);
+        resetButtonCircle = new Circle(leftX + BUTTON_RADIUS * 2 + BUTTON_SPACING, topY, BUTTON_RADIUS);
 
         dulce = new Dulce(world, 0, 1, PIXELS_TO_METER, new Texture("dulce2.png"));
-        gancho1 = new Gancho(world, -5, 5); // Gancho en la parte superior
+        gancho1 = new Gancho(world, -4, 8); // Gancho en la parte superior
         gancho2 = new Gancho(world, 8, -1.5f);
-        gancho3 = new Gancho(world, -6f, -5);
-        cuerda1 = new Cuerda(world, dulce, gancho1.getBody().getPosition(), 0.1f, 0.25f); // Cuerda corta, delgada, y más rígida
-        cuerda2 = new Cuerda(world, dulce, gancho2.getBody().getPosition(), 0.1f, 0.25f); // Cuerda de longitud media, grosor medio, elasticidad normal
-        cuerda3 = new Cuerda(world, dulce, gancho3.getBody().getPosition(), 0.1f, 0.25f);
+        gancho3 = new Gancho(world, -5, -5);
+        cuerda1 = new Cuerda(world, dulce, gancho1.getBody().getPosition(), 8f, 0.25f, 5); // Cuerda corta, delgada, y más rígida
+        cuerda2 = new Cuerda(world, dulce, gancho2.getBody().getPosition(), 8f, 0.25f, 7); // Cuerda de longitud media, grosor medio, elasticidad normal
+        cuerda3 = new Cuerda(world, dulce, gancho3.getBody().getPosition(), 6f, 0.25f, 7);
 
         collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana);
         collisionDetector.start();
@@ -119,6 +142,16 @@ public class Nivel2 implements Screen {
         Gdx.input.setInputProcessor(new InputAdapter() {
             public boolean touchDragged(int screenX, int screenY, int pointer) {
                 Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+                Vector2 touchPoint = new Vector2(worldCoordinates.x, worldCoordinates.y);
+                if (pauseButtonCircle.contains(touchPoint.x, touchPoint.y)) {
+                    pausarJuego();
+                    return true;
+                }
+
+                if (resetButtonCircle.contains(touchPoint.x, touchPoint.y)) {
+                    reiniciarNivel();
+                    return true;
+                }
                 if (cuerda1.detectarToque(new Vector2(worldCoordinates.x, worldCoordinates.y))) {
                     cuerda1.cortar();
                 } else if (cuerda2.detectarToque(new Vector2(worldCoordinates.x, worldCoordinates.y))) {
@@ -129,6 +162,14 @@ public class Nivel2 implements Screen {
                 return true;
             }
         });
+    }
+    
+    private void pausarJuego() {
+        new PantallaPausa(jugador);
+    }
+    
+    private void reiniciarNivel() {
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador));
     }
 
     private void dulceTocoEstrella(int starIndex) {
@@ -212,7 +253,7 @@ public class Nivel2 implements Screen {
 
         // Dibujar los sprites
         batch.begin();
-        //batch.draw(fondoTextura, -camera.viewportWidth / 2, -camera.viewportHeight / 2, camera.viewportWidth, camera.viewportHeight);
+        batch.draw(fondoTextura, -camera.viewportWidth / 2, -camera.viewportHeight / 2, camera.viewportWidth, camera.viewportHeight);
 
         cuerda1.draw(batch);
         cuerda2.draw(batch);
@@ -234,24 +275,23 @@ public class Nivel2 implements Screen {
         }
 
         omNom.draw(batch);
+        
+        batch.draw(pauseButtonTexture,
+                pauseButtonCircle.x - pauseButtonCircle.radius,
+                pauseButtonCircle.y - pauseButtonCircle.radius,
+                pauseButtonCircle.radius * 2,
+                pauseButtonCircle.radius * 2);
+
+        batch.draw(resetButtonTexture,
+                resetButtonCircle.x - resetButtonCircle.radius,
+                resetButtonCircle.y - resetButtonCircle.radius,
+                resetButtonCircle.radius * 2,
+                resetButtonCircle.radius * 2);
 
         batch.end();
     }
 
     public boolean tocarCuerda(float touchX, float touchY, Cuerda cuerda) {
-        if (cuerda != null) {
-            Vector2 cuerdaPos = cuerda.getCuerpoCuerda().getPosition();
-
-            float distancia = distanciaPuntoACuerda(touchX, touchY, cuerdaPos.x, cuerdaPos.y, dulce.getBody().getPosition().x, dulce.getBody().getPosition().y);
-
-            if (distancia < 10f) {
-                cuerda.cortar();
-                return true;
-            }
-
-        } else {
-            System.out.println("La cuerda aún no ha sido inicializada.");
-        }
         return false;
     }
 

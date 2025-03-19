@@ -15,6 +15,6 @@ public class CutTR extends Game {
 
     public void create() {
         Box2D.init();
-        setScreen(new Nivel1());
+        //setScreen(new Nivel1());
     }
 }

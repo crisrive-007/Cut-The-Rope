@@ -9,8 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
-import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 
 /**
  *
@@ -19,116 +18,235 @@ import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
 public class Cuerda {
 
     private World world;
-    private Body body;
     private Dulce dulce;
     private Vector2 ganchoPos;
     private float longitud;
     private float thickness;
-    private RopeJoint ropeJoint;
     private boolean isCortada;
 
-    public Cuerda(World world, Dulce dulce, Vector2 ganchoPos, float longitud, float grosor) {
+    // Cuerpos y conexiones para la simulación de la cuerda
+    private Body anchorBody; // Cuerpo del gancho
+    private Body[] segmentBodies; // Segmentos de la cuerda
+    private Joint[] joints; // Articulaciones entre segmentos
+    private int numSegments; // Número de segmentos de la cuerda
+
+    // Textura para dibujar
+    private Texture cuerdaTextura;
+
+    public Cuerda(World world, Dulce dulce, Vector2 ganchoPos, float longitud, float grosor, int segmentos) {
         this.world = world;
         this.dulce = dulce;
         this.ganchoPos = ganchoPos;
         this.longitud = longitud;
         this.thickness = grosor;
         this.isCortada = false;
-        crearCuerda();
+        this.numSegments = segmentos;
+        cuerdaTextura = new Texture("cuerda.png");
+
+        crearCuerdaFisica();
     }
 
-    private void crearCuerda() {
-        // Crear un cuerpo estático para el gancho
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        bodyDef.position.set(ganchoPos);
-        body = world.createBody(bodyDef);
+    // Método para verificar si la cuerda está cortada
+    public boolean isCortada() {
+        return isCortada;
+    }
 
-        // Crear la cuerda con un RopeJoint, estableciendo la longitud máxima
-        RopeJointDef ropeJointDef = new RopeJointDef();
-        ropeJointDef.bodyA = body;
-        ropeJointDef.bodyB = dulce.getBody();
-        ropeJointDef.localAnchorA.set(0, 0);
-        ropeJointDef.localAnchorB.set(0, 0);
-        ropeJointDef.maxLength = longitud;
-        ropeJoint = (RopeJoint) world.createJoint(ropeJointDef);
+    private void crearCuerdaFisica() {
+        // Crear el cuerpo del gancho (estático)
+        BodyDef anchorDef = new BodyDef();
+        anchorDef.type = BodyDef.BodyType.StaticBody;
+        anchorDef.position.set(ganchoPos);
+        anchorBody = world.createBody(anchorDef);
+
+        // Crear los segmentos de la cuerda
+        float segmentLength = longitud / numSegments;
+        segmentBodies = new Body[numSegments];
+        joints = new Joint[numSegments];
+
+        // Propiedades físicas para los segmentos
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 1.0f;
+        fixtureDef.friction = 0.5f;
+        fixtureDef.restitution = 0.1f;
+
+        // Crear cada segmento de la cuerda
+        for (int i = 0; i < numSegments; i++) {
+            BodyDef bodyDef = new BodyDef();
+            bodyDef.type = BodyDef.BodyType.DynamicBody;
+
+            // Posicionamos los segmentos en línea recta desde el gancho
+            float segmentPosX = ganchoPos.x;
+            float segmentPosY = ganchoPos.y - (i + 0.5f) * segmentLength;
+            bodyDef.position.set(segmentPosX, segmentPosY);
+
+            // Crear el cuerpo del segmento
+            Body segmentBody = world.createBody(bodyDef);
+
+            // Forma del segmento (rectangular y delgada)
+            PolygonShape shape = new PolygonShape();
+            shape.setAsBox(thickness / 2, segmentLength / 2);
+            fixtureDef.shape = shape;
+
+            segmentBody.createFixture(fixtureDef);
+            segmentBodies[i] = segmentBody;
+
+            shape.dispose();
+
+            // Unir este segmento al anterior o al gancho (en el caso del primer segmento)
+            RevoluteJointDef jointDef = new RevoluteJointDef();
+
+            if (i == 0) {
+                // Unir al gancho
+                jointDef.bodyA = anchorBody;
+                jointDef.bodyB = segmentBody;
+                jointDef.localAnchorA.set(0, 0);
+                jointDef.localAnchorB.set(0, segmentLength / 2);
+            } else {
+                // Unir al segmento anterior
+                jointDef.bodyA = segmentBodies[i - 1];
+                jointDef.bodyB = segmentBody;
+                jointDef.localAnchorA.set(0, -segmentLength / 2);
+                jointDef.localAnchorB.set(0, segmentLength / 2);
+            }
+
+            jointDef.collideConnected = false;
+            joints[i] = world.createJoint(jointDef);
+        }
+
+        // Conectar el último segmento al dulce
+        RevoluteJointDef dulceJointDef = new RevoluteJointDef();
+        dulceJointDef.bodyA = segmentBodies[numSegments - 1];
+        dulceJointDef.bodyB = dulce.getBody();
+        dulceJointDef.localAnchorA.set(0, -segmentLength / 2);
+        dulceJointDef.localAnchorB.set(0, 0); // Punto de conexión en el dulce
+        dulceJointDef.collideConnected = false;
+
+        // Añadir este joint como el último en nuestro array 
+        // (necesitamos hacer un nuevo array con un tamaño mayor)
+        Joint[] newJoints = new Joint[numSegments + 1];
+        System.arraycopy(joints, 0, newJoints, 0, numSegments);
+        newJoints[numSegments] = world.createJoint(dulceJointDef);
+        joints = newJoints;
     }
 
     public void update() {
-        if (ropeJoint != null) {
-            float distancia = ganchoPos.dst(dulce.getBody().getPosition());
-            longitud = distancia;
-            ropeJoint.setMaxLength(longitud);
-        } else {
-            cortar();
-        }
+        // En este método podríamos actualizar propiedades dinámicas de la cuerda
+        // Por ahora no es necesario porque Box2D ya maneja la física
     }
 
     public void draw(SpriteBatch batch) {
-        // No dibujes la cuerda si ha sido cortada
         if (isCortada) {
             return;
         }
 
-        Texture cuerdaTextura = new Texture("cuerda.png");
+        // Dibujar cada segmento de la cuerda
+        for (int i = 0; i < numSegments; i++) {
+            Body body = segmentBodies[i];
+            Vector2 position = body.getPosition();
+            float angle = body.getAngle() * MathUtils.radiansToDegrees;
 
-        // Posiciones de inicio y fin de la cuerda
-        Vector2 dulcePos = dulce.getBody().getPosition();
+            float segmentLength = longitud / numSegments;
 
-        // Calcular el ángulo entre el gancho y el dulce
-        float deltaX = dulcePos.x - ganchoPos.x;
-        float deltaY = dulcePos.y - ganchoPos.y;
-        float angle = (float) Math.atan2(deltaY, deltaX) * (180f / (float) Math.PI);
-
-        // Calcular la longitud actual de la cuerda
-        float distancia = ganchoPos.dst(dulcePos);
-
-        // Dibujar la textura estirada con el grosor adecuado
-        batch.draw(cuerdaTextura,
-                ganchoPos.x - 0.11f, ganchoPos.y, // Posición inicial
-                0, 0, // Origen de la rotación
-                distancia, thickness, // Tamaño (largo de la cuerda y grosor deseado)
-                1, 1, // Escalado
-                angle, // Rotación en grados
-                0, 0, // Coordenadas iniciales del recorte
-                cuerdaTextura.getWidth(), cuerdaTextura.getHeight(), // Tamaño original de la textura
-                false, false // Sin volteo horizontal o vertical
-        );
-    }
-
-    public Body getCuerpoCuerda() {
-        return body;
+            // Dibujar textura con rotación
+            batch.draw(cuerdaTextura,
+                    position.x - thickness / 2, position.y - segmentLength / 2, // Posición
+                    thickness / 2, segmentLength / 2, // Origen para rotación
+                    thickness, segmentLength, // Ancho y alto
+                    1, 1, // Escalado
+                    angle, // Ángulo de rotación
+                    0, 0, // Coordenadas en la textura
+                    cuerdaTextura.getWidth(), cuerdaTextura.getHeight(), // Tamaño original de la textura
+                    false, false); // Sin volteo
+        }
     }
 
     public void cortar() {
-        if (ropeJoint != null) {
-            world.destroyJoint(ropeJoint);
-            ropeJoint = null; // Marcamos que la cuerda ha sido cortada
-            isCortada = true;  // Indicamos que la cuerda ya ha sido cortada
+        if (!isCortada) {
+            destruirCuerda();
+            isCortada = true;
         }
     }
 
     public boolean detectarToque(Vector2 punteroPos) {
-        // Cálculo de la distancia entre el puntero y la cuerda
-        Vector2 dulcePos = dulce.getBody().getPosition();
+        // Comprobar si alguno de los segmentos ha sido tocado
+        for (Body segmentBody : segmentBodies) {
+            // Obtener la posición y ángulo del segmento
+            Vector2 position = segmentBody.getPosition();
+            float angle = segmentBody.getAngle();
 
-        // Calculamos la dirección de la cuerda
-        Vector2 cuerdaDir = new Vector2(dulcePos.x - ganchoPos.x, dulcePos.y - ganchoPos.y).nor();
+            // Longitud del segmento
+            float segmentLength = longitud / numSegments;
 
-        // Proyectamos el puntero sobre la línea de la cuerda
-        Vector2 toPunterPos = new Vector2(punteroPos.x - ganchoPos.x, punteroPos.y - ganchoPos.y);
-        float proj = toPunterPos.dot(cuerdaDir);
+            // Calcular puntos inicial y final del segmento considerando la rotación
+            // Crear vectores de desplazamiento basados en el ángulo
+            Vector2 offset = new Vector2(0, segmentLength / 2).rotateRad(angle);
 
-        // Limitar la proyección a la longitud de la cuerda
-        proj = MathUtils.clamp(proj, 0, ganchoPos.dst(dulcePos));
+            // Puntos inicial y final considerando la rotación
+            Vector2 start = new Vector2(position).add(offset);
+            Vector2 end = new Vector2(position).sub(offset);
 
-        // Encontramos la distancia desde el puntero a la cuerda
-        Vector2 closestPoint = new Vector2(ganchoPos.x + cuerdaDir.x * proj, ganchoPos.y + cuerdaDir.y * proj);
-        float distance = closestPoint.dst(punteroPos);
+            // Calcular la distancia del puntero a la línea del segmento
+            // Vector dirección del segmento
+            Vector2 segmentDir = new Vector2(end).sub(start).nor();
+            Vector2 toPunteroPos = new Vector2(punteroPos).sub(start);
 
-        // Umbral de detección (ajústalo según tus necesidades)
-        float umbralToque = 0.1f; // Distancia mínima para considerar un toque
+            // Proyección del vector toPunteroPos sobre segmentDir
+            float proj = toPunteroPos.dot(segmentDir);
+            proj = MathUtils.clamp(proj, 0, end.dst(start));
 
-        return distance < umbralToque;
+            // Punto más cercano en el segmento al puntero
+            Vector2 closestPoint = new Vector2(start).add(new Vector2(segmentDir).scl(proj));
+            float distance = closestPoint.dst(punteroPos);
+
+            // Si la distancia es menor que el grosor, la cuerda fue tocada
+            if (distance < thickness) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void dispose() {
+        if (cuerdaTextura != null) {
+            cuerdaTextura.dispose();
+        }
+    }
+
+    // Métodos para modificar el largo de la cuerda (esto requerirá recrear la cuerda)
+    public void setLongitud(float nuevaLongitud) {
+        // Eliminar la cuerda actual
+        destruirCuerda();
+
+        // Actualizar longitud
+        this.longitud = nuevaLongitud;
+
+        // Crear nueva cuerda con la longitud actualizada
+        crearCuerdaFisica();
+    }
+
+    private void destruirCuerda() {
+        for (Joint joint : joints) {
+            if (joint != null) {
+                world.destroyJoint(joint);
+            }
+        }
+
+        for (Body body : segmentBodies) {
+            if (body != null) {
+                world.destroyBody(body);
+            }
+        }
+
+        if (anchorBody != null) {
+            world.destroyBody(anchorBody);
+        }
+    }
+
+    public Body getAnchorBody() {
+        return anchorBody;
+    }
+
+    public float getLongitud() {
+        return longitud;
     }
 }
