@@ -24,6 +24,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -99,7 +102,11 @@ public class LoginScreen extends ScreenAdapter {
         loginButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                validateLogin();
+                try {
+                    validateLogin();
+                } catch (IOException ex) {
+                    Logger.getLogger(LoginScreen.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -146,7 +153,7 @@ public class LoginScreen extends ScreenAdapter {
         skin.dispose();
     }
 
-    private void validateLogin() {
+    private void validateLogin() throws IOException {
         String user = usernameField.getText();
         String pass = passwordField.getText();
 
