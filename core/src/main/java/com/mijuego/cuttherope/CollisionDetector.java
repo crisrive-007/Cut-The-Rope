@@ -42,23 +42,25 @@ public class CollisionDetector extends Thread implements ContactListener {
         this.omNom = omNom;
         this.bodiesToRemove = bodiesToRemove;
         this.collidedStars = new HashSet<>();
-        this.starRectangles = starRectangles;
-        this.starCollected = starCollected;
         this.colisionDetectada = false;
         this.collidedRana = collidedRana;
         this.world.setContactListener(this);
+        this.starRectangles = (starRectangles != null) ? starRectangles : new Rectangle[0];
+        this.starCollected = (starCollected != null) ? starCollected : new boolean[0];
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) { // Verifica si el hilo fue interrumpido
             if (colisionDetectada) {
                 break;
             }
 
-            if (dulce != null) {
+            if (dulce != null && starRectangles != null) {
                 for (int i = 0; i < starRectangles.length; i++) {
-                    if (!starCollected[i] && dulce.getBody() != null && starRectangles[i].overlaps(new Rectangle(dulce.getBody().getPosition().x - 0.5f, dulce.getBody().getPosition().y - 0.5f, 1, 1))) {
+                    if (!starCollected[i] && dulce.getBody() != null
+                            && starRectangles[i].overlaps(new Rectangle(dulce.getBody().getPosition().x - 0.5f,
+                                    dulce.getBody().getPosition().y - 0.5f, 1, 1))) {
                         dulceTocoEstrella(i);
                     }
                 }
@@ -67,7 +69,9 @@ public class CollisionDetector extends Thread implements ContactListener {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("CollisionDetector ha sido interrumpido.");
+                Thread.currentThread().interrupt(); // Restablece el estado de interrupción
+                break; // Sale del bucle
             }
         }
     }

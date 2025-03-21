@@ -3,26 +3,28 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mijuego.cuttherope;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Date;
 
-/**
- *
- * @author river
- */
-public class Usuarios {
+public class Usuarios implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String identificadorUnico;
     private String contraseña;
     private String nombreCompleto;
     private Date fechaRegistro;
-    private Date ultimaSesion;
+    private transient Date ultimaSesion; // Se marca como transient si no es necesario serializarlo
     private int progresoJuego;
     private int tiempoTotalJugado;
-    private String historialPartidas;
+    private transient String historialPartidas; // Se marca como transient si no es crucial
     private String preferenciasJuego;
     private String avatar;
     private int ranking;
-    private String amigos;
+    private transient String amigos; // Se marca como transient si no es crucial
 
     public Usuarios(String identificadorUnico, String contraseña, String nombreCompleto) {
         this.identificadorUnico = identificadorUnico;
@@ -111,5 +113,13 @@ public class Usuarios {
 
     public void setAmigos(String amigos) {
         this.amigos = amigos;
+    }
+
+    // Manejo de la deserialización para evitar problemas con `Date`
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (fechaRegistro == null) {
+            fechaRegistro = new Date();
+        }
     }
 }
