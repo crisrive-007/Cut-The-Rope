@@ -24,6 +24,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -99,7 +102,11 @@ public class LoginScreen extends ScreenAdapter {
         loginButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                validateLogin();
+                try {
+                    validateLogin();
+                } catch (IOException ex) {
+                    Logger.getLogger(LoginScreen.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -146,15 +153,17 @@ public class LoginScreen extends ScreenAdapter {
         skin.dispose();
     }
 
-    private void validateLogin() {
+    private void validateLogin() throws IOException {
         String user = usernameField.getText();
         String pass = passwordField.getText();
 
-        ControlUsuarios controlUsuarios = new ControlUsuarios("usuarios.dat");
+        //ControlUsuarios controlUsuarios = new ControlUsuarios("usuarios.dat");
+        Control control = new Control();
 
-        Usuarios usuario = controlUsuarios.buscarUsuario(user);  // Buscar al usuario por nombre
+        //Usuarios usuario = controlUsuarios.buscarUsuario(user);  // Buscar al usuario por nombre
 
-        if (usuario != null && usuario.getContraseña().equals(pass)) { // Verificar contraseña
+        if (control.iniciarSesion(user, pass)) { // Verificar contraseña
+            Usuario usuario = control.obtenerUsuario(user);
             messageLabel.setText("¡Inicio de sesión exitoso!");
             messageLabel.setColor(Color.GREEN);
 

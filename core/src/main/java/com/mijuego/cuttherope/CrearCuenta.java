@@ -24,6 +24,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -37,9 +40,10 @@ public class CrearCuenta extends ScreenAdapter {
     private TextField nameField, usernameField, passwordField, confirmPasswordField;
     private Label messageLabel;
     private Table table, cyanPanelTable;
-    private ControlUsuarios controlUsuarios;
+    //private ControlUsuarios controlUsuarios;
+    private Control controlUsuarios;
 
-    public CrearCuenta(ControlUsuarios controlUsuarios) {
+    public CrearCuenta(Control controlUsuarios) {
         this.controlUsuarios = controlUsuarios;
     }
 
@@ -104,7 +108,11 @@ public class CrearCuenta extends ScreenAdapter {
         createAccountButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                createAccount();
+                try {
+                    createAccount();
+                } catch (IOException ex) {
+                    Logger.getLogger(CrearCuenta.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -155,7 +163,7 @@ public class CrearCuenta extends ScreenAdapter {
         skin.dispose();
     }
 
-    private void createAccount() {
+    private void createAccount() throws IOException {
         String name = nameField.getText();
         String user = usernameField.getText();
         String pass = passwordField.getText();
@@ -169,8 +177,10 @@ public class CrearCuenta extends ScreenAdapter {
             messageLabel.setColor(Color.RED);
         } else {
             // Crear un objeto Usuario con los datos ingresados
-            Usuarios nuevoUsuario = new Usuarios(user, pass, name);
-            controlUsuarios.agregarUsuario(nuevoUsuario);
+            //Usuarios nuevoUsuario = new Usuarios(user, pass, name);
+            Usuario nuevoUsuario = new Usuario(user, pass, name);
+            //controlUsuarios.agregarUsuario(nuevoUsuario);
+            controlUsuarios.registrarUsuario(user, pass, name);
 
             // Mostrar mensaje de éxito
             messageLabel.setText("Cuenta creada exitosamente.");

@@ -6,29 +6,26 @@ package com.mijuego.cuttherope;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 /**
  *
  * @author river
  */
-public class PantallaPausa extends JFrame{
+public class PantallaPausa extends JFrame {
 
-    public PantallaPausa(Usuarios jugador) {
-        JFrame frame = new JFrame("Panel de Pausa");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(300, 200);
-        frame.setLocationRelativeTo(null);
+    private final Game game;
+
+    public PantallaPausa(Usuario jugador, Game game) {
+        this.game = game;
+
+        setTitle("Panel de Pausa");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Don't use EXIT_ON_CLOSE
+        setSize(300, 200);
+        setLocationRelativeTo(null);
 
         // Crear el panel
         JPanel buttonPanel = new JPanel();
@@ -43,19 +40,23 @@ public class PantallaPausa extends JFrame{
         buttonPanel.add(resumeButton);
 
         // Añadir el panel al frame
-        frame.add(buttonPanel);
+        add(buttonPanel);
 
-        // Hacer visible el frame
-        frame.setVisible(true);
-        
+        // Acción para el botón "Menú Principal"
         mainMenuButton.addActionListener(e -> {
-            ((Game) Gdx.app.getApplicationListener()).setScreen(new MapaNiveles(jugador));
-            frame.dispose();
+            // Use postRunnable to execute on the LibGDX rendering thread
+            Gdx.app.postRunnable(() -> {
+                game.setScreen(new MapaNiveles(jugador));
+            });
+            dispose(); // Close the pause window
         });
 
         // Acción para el botón "Reanudar"
         resumeButton.addActionListener(e -> {
-            this.dispose();
+            dispose(); // Just close the pause window
         });
+
+        // Hacer visible el frame
+        setVisible(true);
     }
 }

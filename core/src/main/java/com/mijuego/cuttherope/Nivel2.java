@@ -34,7 +34,7 @@ public class Nivel2 implements Screen {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
-    private Usuarios jugador;
+    private Usuario jugador;
 
     private final float TIMESTEP = 1 / 60f;
     private final int VELOCITYITERATIONS = 8, POSITIONITERATIONS = 3;
@@ -75,7 +75,7 @@ public class Nivel2 implements Screen {
 
     private int puntos = 0;
     
-    public Nivel2(Usuarios jugador) {
+    public Nivel2(Usuario jugador) {
         this.jugador = jugador;
     }
 
@@ -165,7 +165,7 @@ public class Nivel2 implements Screen {
     }
     
     private void pausarJuego() {
-        new PantallaPausa(jugador);
+        new PantallaPausa(jugador, (Game)Gdx.app.getApplicationListener());
     }
     
     private void reiniciarNivel() {

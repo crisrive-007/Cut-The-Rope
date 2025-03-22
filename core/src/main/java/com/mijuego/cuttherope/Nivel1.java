@@ -16,16 +16,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactImpulse;
-import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -42,7 +34,7 @@ public class Nivel1 implements Screen {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
-    private Usuarios jugador;
+    private Usuario jugador;
 
     private final float TIMESTEP = 1 / 60f;
     private final int VELOCITYITERATIONS = 8, POSITIONITERATIONS = 3;
@@ -83,7 +75,7 @@ public class Nivel1 implements Screen {
 
     private int puntos = 0;
     
-    public Nivel1(Usuarios jugador) {
+    public Nivel1(Usuario jugador) {
         this.jugador = jugador;
     }
 
@@ -185,7 +177,7 @@ public class Nivel1 implements Screen {
     }
 
     private void pausarJuego() {
-        new PantallaPausa(jugador);
+        new PantallaPausa(jugador, (Game)Gdx.app.getApplicationListener());
     }
 
     private void reiniciarNivel() {

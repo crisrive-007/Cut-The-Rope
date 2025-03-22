@@ -32,10 +32,11 @@ public class MiPerfil extends ScreenAdapter {
     private Stage stage;
     private Texture background, logoTexture;
     private Skin skin;
-    private Usuarios jugador;
+    //private Usuarios jugador;
+    private Usuario jugador;
 
-    public MiPerfil(Usuarios jugador) {
-        this.jugador = jugador;  // Asumimos que 'jugador' es el nombre del jugador
+    public MiPerfil(Usuario jugador) {
+        this.jugador = jugador;
     }
 
     @Override
@@ -75,7 +76,8 @@ public class MiPerfil extends ScreenAdapter {
         // Agregar información del jugador al panel izquierdo
         Label nombreLabel = new Label("Nombre Completo: " + jugador.getNombreCompleto(), labelStyle);
         leftPanel.add(nombreLabel).padBottom(20).row();
-        Label usuarioLabel = new Label("Usuario: " + jugador.getIdentificadorUnico(), labelStyle);
+        //Label usuarioLabel = new Label("Usuario: " + jugador.getIdentificadorUnico(), labelStyle);
+        Label usuarioLabel = new Label("Usuario: " + jugador.getNombreUsuario(), labelStyle);
         leftPanel.add(usuarioLabel).padBottom(20).row();
         Label fechaRegistroLabel = new Label("Fecha de registro: " + jugador.getFechaRegistro(), labelStyle);
         leftPanel.add(fechaRegistroLabel).padBottom(20).row();
@@ -87,8 +89,9 @@ public class MiPerfil extends ScreenAdapter {
         leftPanel.add(tiempoJugadoLabel).padBottom(20).row();
 
         // Foto de perfil del jugador en el panel derecho (puedes reemplazar la imagen por la real del jugador)
-        Image perfilImage = new Image(new Texture(Gdx.files.internal("perfil-imagen.jpg")));  // Reemplazar con la imagen del jugador
-        perfilImage.setSize(100, 100); // Tamaño de la imagen de perfil
+        //Image perfilImage = new Image(new Texture(jugador.getAvatar()));  // Reemplazar con la imagen del jugador
+        Image perfilImage = new Image(new Texture(jugador.getRutaAvatar()));
+        perfilImage.setSize(20, 20); // Tamaño de la imagen de perfil
 
         // Botones
         TextButton cambiarImagenButton = new TextButton("Cambiar Imagen", skin);
@@ -98,8 +101,7 @@ public class MiPerfil extends ScreenAdapter {
         cambiarImagenButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Aquí va la lógica para cambiar la imagen del perfil
-                System.out.println("Cambiar imagen");
+                new SeleccionarImagen(jugador).setVisible(true);
             }
         });
 
@@ -112,7 +114,7 @@ public class MiPerfil extends ScreenAdapter {
         });
 
         // Agregar la foto de perfil y los botones al panel derecho
-        rightPanel.add(perfilImage).padBottom(20).row();  // Foto de perfil
+        rightPanel.add(perfilImage).size(220, 220).padBottom(20).row();  // Foto de perfil
         rightPanel.add(cambiarImagenButton).padBottom(10).row();  // Botón cambiar imagen
         rightPanel.add(eliminarCuentaButton).padBottom(10).row();  // Botón eliminar cuenta
 

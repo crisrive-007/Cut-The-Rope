@@ -17,6 +17,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,9 +31,9 @@ public class MenuJugador extends ScreenAdapter {
     private Skin skin;
     private TextButton playButton, profileButton, exitButton;
     private Texture background, logoTexture;
-    private Usuarios jugador;
+    private Usuario jugador;
 
-    public MenuJugador(Usuarios jugador) {
+    public MenuJugador(Usuario jugador) {
         this.jugador = jugador;
     }
 
@@ -67,8 +70,14 @@ public class MenuJugador extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Aquí puedes agregar la pantalla de creación de cuenta (aún no implementada)
-                ControlUsuarios controlUsuarios;
-                controlUsuarios = new ControlUsuarios("usuarios.dat");
+                //ControlUsuarios controlUsuarios;
+                Control controlUsuarios;
+                /*try {*/
+                    //controlUsuarios = new ControlUsuarios("usuarios.dat");
+                    controlUsuarios = new Control();
+                /*} catch (IOException ex) {
+                    Logger.getLogger(MenuJugador.class.getName()).log(Level.SEVERE, null, ex);
+                }*/
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new MiPerfil(jugador));
             }
         });

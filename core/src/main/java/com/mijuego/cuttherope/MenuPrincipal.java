@@ -17,6 +17,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -36,14 +39,14 @@ public class MenuPrincipal extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        
+
         background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
-        
+
         logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
 
         // Cargar el skin (asegúrate de tener el archivo uiskin.json en tu proyecto)
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        
+
         Image logoImage = new Image(logoTexture);
         logoImage.setSize(477, 209);
 
@@ -65,8 +68,10 @@ public class MenuPrincipal extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Aquí puedes agregar la pantalla de creación de cuenta (aún no implementada)
-                ControlUsuarios controlUsuarios;
-                controlUsuarios = new ControlUsuarios("usuarios.dat");
+                //ControlUsuarios controlUsuarios = null;
+                Control controlUsuarios = null;
+                //controlUsuarios = new ControlUsuarios("usuarios.dat");
+                controlUsuarios = new Control();
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new CrearCuenta(controlUsuarios));
             }
         });
@@ -82,7 +87,7 @@ public class MenuPrincipal extends ScreenAdapter {
         // Crear una tabla para organizar los botones
         Table table = new Table();
         table.setFillParent(true);  // Asegura que la tabla ocupe toda la pantalla
-        
+
         table.add(logoImage).center().padBottom(20);
         table.row();
 
@@ -98,7 +103,7 @@ public class MenuPrincipal extends ScreenAdapter {
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
+
         stage.getBatch().begin();
         stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage.getBatch().end();

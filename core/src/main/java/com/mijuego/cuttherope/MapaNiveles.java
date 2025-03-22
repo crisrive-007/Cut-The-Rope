@@ -32,9 +32,10 @@ public class MapaNiveles extends ScreenAdapter {
     private Skin skin;
     private TextButton level1Button, level2Button, level3Button, level4Button, level5Button, exitButton;
     private Texture background;
-    private Usuarios jugador;
+    //private Usuarios jugador;
+    private Usuario jugador;
 
-    public MapaNiveles(Usuarios jugador) {
+    public MapaNiveles(Usuario jugador) {
         this.jugador = jugador;
     }
 
@@ -43,7 +44,7 @@ public class MapaNiveles extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        background = new Texture(Gdx.files.internal("mapa_cuttherope.jpeg"));
+        background = new Texture(Gdx.files.internal("mapa_cuttherope.jpg"));
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
@@ -76,7 +77,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 3
-                //((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3Screen());
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador));
             }
         });
 
@@ -111,7 +112,7 @@ public class MapaNiveles extends ScreenAdapter {
         stage.addActor(level4Button);
         stage.addActor(level5Button);
         stage.addActor(exitButton);
-        
+
         level1Button.setPosition(380, 500);
         level2Button.setPosition(725, 550);
         level3Button.setPosition(1220, 500);
@@ -164,7 +165,7 @@ public class MapaNiveles extends ScreenAdapter {
         pixmap.dispose(); // Liberar memoria
         return texture;
     }
-    
+
     private TextButton.TextButtonStyle crearBotonConColor(Color color) {
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
 
@@ -179,7 +180,7 @@ public class MapaNiveles extends ScreenAdapter {
 
         buttonStyle.font = new BitmapFont();
         buttonStyle.fontColor = Color.WHITE;
-        
+
         return buttonStyle;
     }
 }
