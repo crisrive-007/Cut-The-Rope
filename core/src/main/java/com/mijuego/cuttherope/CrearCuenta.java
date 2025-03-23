@@ -37,6 +37,7 @@ public class CrearCuenta extends ScreenAdapter {
     private Stage stage;
     private Texture background, logoTexture;
     private Skin skin;
+    private TextButton exitButton;
     private TextField nameField, usernameField, passwordField, confirmPasswordField;
     private Label messageLabel;
     private Table table, cyanPanelTable;
@@ -71,6 +72,8 @@ public class CrearCuenta extends ScreenAdapter {
         table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
+        
+        exitButton = new TextButton("Salir", skin);
 
         // Crear la imagen del logo y agregarla sobre el panel cyan
         Image logoImage = new Image(logoTexture);
@@ -83,6 +86,18 @@ public class CrearCuenta extends ScreenAdapter {
 
         // Establecer tamaño del panel cyan a 600x400 (más grande)
         cyanPanelTable.setSize(600, 400);
+        
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Salir de la aplicación
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuPrincipal());
+            }
+        });
+
+        stage.addActor(exitButton);
+        exitButton.setSize(80, 30);
+        exitButton.setPosition(10, 820);
 
         // Crear los campos de texto y etiquetas
         nameField = new TextField("", skin);

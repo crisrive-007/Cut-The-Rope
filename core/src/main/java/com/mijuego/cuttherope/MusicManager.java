@@ -12,30 +12,33 @@ import com.badlogic.gdx.files.FileHandle;
  *
  * @author river
  */
-public class MusicManager implements Runnable{
+public class MusicManager implements Runnable {
 
     private static MusicManager instance;
     private Music backgroundMusic;
     private boolean isRunning = false;
     private Thread musicThread;
-    private float volume = 0.5f;
+    private float volume;
     private boolean isLooping = true;
     private boolean isPaused = false;
     private float position = 0f;
+    private Usuario jugador;
+    private Preferencias preferencias;
 
-    public static MusicManager getInstance() {
+    public static MusicManager getInstance(Usuario jugador) {
         if (instance == null) {
-            instance = new MusicManager();
+            instance = new MusicManager(jugador);
         }
         return instance;
     }
 
-    private MusicManager() {
-        
+    private MusicManager(Usuario jugador) {
+        this.jugador = jugador;
+        this.preferencias = jugador.getPreferencias();
     }
 
     public void initialize(String musicPath) {
-        // Este método debe ser llamado desde el hilo principal del juego (create())
+        volume = preferencias.getVolumen();
         Gdx.app.postRunnable(() -> {
             try {
                 FileHandle musicFile = Gdx.files.internal(musicPath);
@@ -74,7 +77,7 @@ public class MusicManager implements Runnable{
             }
         }
     }
-    
+
     public void play() {
         if (backgroundMusic != null) {
             Gdx.app.postRunnable(() -> {
@@ -121,6 +124,7 @@ public class MusicManager implements Runnable{
         return isPaused;
     }
 
+    // Método para cambiar el volumen
     public void setVolume(float volume) {
         this.volume = volume;
         if (backgroundMusic != null) {
@@ -167,6 +171,4 @@ public class MusicManager implements Runnable{
             });
         }
     }
-    
-    
 }

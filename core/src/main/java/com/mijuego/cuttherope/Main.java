@@ -9,8 +9,6 @@ public class Main extends Game {
 
     @Override
     public void create() {
-        musica = MusicManager.getInstance();
-        musica.initialize("musica/musica_juego.mp3");
         this.setScreen(new MenuPrincipal());
     }
     

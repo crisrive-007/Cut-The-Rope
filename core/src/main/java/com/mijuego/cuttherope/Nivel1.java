@@ -74,9 +74,13 @@ public class Nivel1 implements Screen {
     private final float BUTTON_SPACING = 0.5f; // Espacio entre botones
 
     private int puntos = 0;
+    private String idioma;
+    private boolean español;
     
-    public Nivel1(Usuario jugador) {
+    public Nivel1(Usuario jugador, String idioma) {
         this.jugador = jugador;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
     }
 
     @Override
@@ -88,9 +92,9 @@ public class Nivel1 implements Screen {
         world = new World(new Vector2(0, -25f), true);
         debugRenderer = new Box2DDebugRenderer();
 
-        // Cargar texturas
-        fondoTextura = new Texture("fondo_dulceria.jpg");
-        //lineaPunteadaTextura = new Texture("linea_punteada.png");
+        String nombre_textura = español ? "fondo_dulceria.jpg" : "fondo_dulceria_ingles.jpg";
+
+        fondoTextura = new Texture(nombre_textura);
 
         // Cargar texturas de los botones
         pauseButtonTexture = new Texture("boton-pausa.png");
@@ -165,23 +169,28 @@ public class Nivel1 implements Screen {
                     return true;
                 }
 
-                // Verificar si el toque está sobre la cuerda
+                return false;
+            }
+            
+            @Override
+            public boolean touchDragged(int screenX, int screenY, int pointer) {
+                Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+                Vector2 touchPoint = new Vector2(worldCoordinates.x, worldCoordinates.y);
                 if (cuerda != null && !cuerda.isCortada() && cuerda.detectarToque(touchPoint)) {
                     cuerda.cortar();
                     return true;
                 }
-
                 return false;
             }
         });
     }
 
     private void pausarJuego() {
-        new PantallaPausa(jugador, (Game)Gdx.app.getApplicationListener());
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaPausa(jugador, (Game) Gdx.app.getApplicationListener(), this, idioma));
     }
 
     private void reiniciarNivel() {
-        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel1(jugador));
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel1(jugador, idioma));
     }
 
     private void dulceTocoEstrella(int starIndex) {
@@ -273,18 +282,6 @@ public class Nivel1 implements Screen {
         // Dibujar el fondo
         batch.draw(fondoTextura, -camera.viewportWidth / 2, -camera.viewportHeight / 2,
                 camera.viewportWidth, camera.viewportHeight);
-
-        // Dibujar la línea punteada (guía visual)
-        if (cuerda != null && !cuerda.isCortada()) {
-            Vector2 ganchoPos = gancho.getBody().getPosition();
-            Vector2 dulcePos = dulce.getBody().getPosition();
-            float lineLength = Math.abs(ganchoPos.y - dulcePos.y);
-
-            /*batch.draw(lineaPunteadaTextura,
-                    ganchoPos.x - 0.05f,
-                    dulcePos.y,
-                    0.1f, lineLength);*/
-        }
 
         // Dibujar la cuerda
         if (cuerda != null) {

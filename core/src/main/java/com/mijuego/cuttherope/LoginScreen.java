@@ -37,6 +37,7 @@ public class LoginScreen extends ScreenAdapter {
     private Stage stage;
     private Texture background, logoTexture;
     private Skin skin;
+    private TextButton exitButton;
     private TextField usernameField, passwordField;
     private Label messageLabel;
     private Table table;
@@ -89,6 +90,7 @@ public class LoginScreen extends ScreenAdapter {
         passwordField = new TextField("", skin);
         passwordField.setPasswordMode(true);
         passwordField.setPasswordCharacter('*');
+        exitButton = new TextButton("Salir", skin);
 
         // Etiquetas y botones
         font.setColor(Color.WHITE);
@@ -109,6 +111,18 @@ public class LoginScreen extends ScreenAdapter {
                 }
             }
         });
+        
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Salir de la aplicación
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuPrincipal());
+            }
+        });
+        
+        stage.addActor(exitButton);
+        exitButton.setSize(80, 30);
+        exitButton.setPosition(10, 820);
 
         // Organizar los elementos dentro de la tabla del panel cyan (Login)
         cyanPanelTable.add(usernameLabel).pad(10);
@@ -167,7 +181,6 @@ public class LoginScreen extends ScreenAdapter {
             messageLabel.setText("¡Inicio de sesión exitoso!");
             messageLabel.setColor(Color.GREEN);
 
-            // Proceder a la pantalla del juego
             ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(usuario));
         } else {
             messageLabel.setText("Usuario o contraseña incorrectos.");

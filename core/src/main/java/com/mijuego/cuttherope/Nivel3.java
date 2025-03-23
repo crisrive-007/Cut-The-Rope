@@ -58,9 +58,13 @@ public class Nivel3 implements Screen {
     private final float BUTTON_SPACING = 0.5f;
 
     private int puntos = 0;
+    private String idioma;
+    private boolean español;
 
-    public Nivel3(Usuario jugador) {
+    public Nivel3(Usuario jugador, String idioma) {
         this.jugador = jugador;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
     }
 
     @Override
@@ -70,7 +74,9 @@ public class Nivel3 implements Screen {
         world = new World(new Vector2(0, -25f), true);
         debugRenderer = new Box2DDebugRenderer();
         
-        fondoTextura = new Texture("fondo_rosquilleria.jpg");
+        String nombre_textura = español ? "fondo_panaderia.jpg" : "fondo_panaderia_ingles.jpg";
+        
+        fondoTextura = new Texture(nombre_textura);
 
         pauseButtonTexture = new Texture("boton-pausa.png");
         resetButtonTexture = new Texture("boton-reinicio.png");
@@ -82,7 +88,7 @@ public class Nivel3 implements Screen {
         camera.position.set(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0);
         camera.update();
         
-        float topY = SCREEN_HEIGHT - BUTTON_RADIUS - 0.5f;
+        float topY = SCREEN_HEIGHT - BUTTON_RADIUS + 5.5f;
         float leftX = BUTTON_RADIUS - 11.5f;
 
         pauseButtonCircle = new Circle(leftX, topY, BUTTON_RADIUS);
@@ -130,10 +136,10 @@ public class Nivel3 implements Screen {
         world.setContactListener(collisionDetector);
 
         Gdx.input.setInputProcessor(new InputAdapter() {
-            @Override
-            public boolean touchDragged(int screenX, int screenY, int pointer) {
-                Vector3 touchPoint3 = camera.unproject(new Vector3(screenX, screenY, 0));
-                Vector2 touchPoint = new Vector2(touchPoint3.x, touchPoint3.y);
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                Vector3 worldCoords = camera.unproject(new Vector3(screenX, screenY, 0));
+                Vector2 touchPoint = new Vector2(worldCoords.x, worldCoords.y);
+
                 if (pauseButtonCircle.contains(touchPoint.x, touchPoint.y)) {
                     pausarJuego();
                     return true;
@@ -144,26 +150,38 @@ public class Nivel3 implements Screen {
                     return true;
                 }
 
+                return false;
+            }
+            
+            @Override
+            public boolean touchDragged(int screenX, int screenY, int pointer) {
+                Vector3 touchPoint3 = camera.unproject(new Vector3(screenX, screenY, 0));
+                Vector2 touchPoint = new Vector2(touchPoint3.x, touchPoint3.y);
+                
                 if (cuerda1.detectarToque(touchPoint)) {
                     cuerda1.cortar();
+                    return true;
                 } else if (cuerda2.detectarToque(touchPoint)) {
                     cuerda2.cortar();
+                    return true;
                 } else if (cuerda3.detectarToque(touchPoint)) {
                     cuerda3.cortar();
+                    return true;
                 } else if (cuerda4.detectarToque(touchPoint)) {
                     cuerda4.cortar();
+                    return true;
                 }
-                return true;
+                return false;
             }
         });
     }
     
     private void pausarJuego() {
-        new PantallaPausa(jugador, (Game)Gdx.app.getApplicationListener());
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaPausa(jugador, (Game) Gdx.app.getApplicationListener(), this, idioma));
     }
 
     private void reiniciarNivel() {
-        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador));
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador, idioma));
     }
 
     private void dulceTocoEstrella(int starIndex) {
@@ -212,6 +230,11 @@ public class Nivel3 implements Screen {
         }
 
         batch.begin();
+        
+        batch.draw(fondoTextura,
+                camera.position.x - camera.viewportWidth / 2,
+                camera.position.y - camera.viewportHeight / 2,
+                camera.viewportWidth, camera.viewportHeight);
         cuerda1.draw(batch);
         cuerda2.draw(batch);
         cuerda3.draw(batch);

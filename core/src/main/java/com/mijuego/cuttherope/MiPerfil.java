@@ -22,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import java.util.Date;
 
 /**
  *
@@ -34,9 +35,13 @@ public class MiPerfil extends ScreenAdapter {
     private Skin skin;
     //private Usuarios jugador;
     private Usuario jugador;
+    private String idioma;
+    private boolean español;
 
-    public MiPerfil(Usuario jugador) {
+    public MiPerfil(Usuario jugador, String idioma) {
         this.jugador = jugador;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
     }
 
     @Override
@@ -72,30 +77,40 @@ public class MiPerfil extends ScreenAdapter {
         float panelWidth = Gdx.graphics.getWidth() / 2;  // Cada panel ocupa la mitad del ancho de la pantalla
         leftPanel.setSize(panelWidth, Gdx.graphics.getHeight());
         rightPanel.setSize(panelWidth, Gdx.graphics.getHeight());
+        
+        String nombre = español ? "Nombre Completo: " : "Full Name: ";
+        String usuario = español ? "Usuario: " : "Username: ";
+        String fecha = español ? "Fecha de Registro: " : "Registration Date: ";
+        String sesion = español ? "Ultima Sesion: " : "Last Session: ";
+        String progreso = español ? "Progreso del Juego: " : "Game Progress: ";
+        String tiempo = español ? "Tiempo Total Jugado: " : "Total Time Played: ";
 
         // Agregar información del jugador al panel izquierdo
-        Label nombreLabel = new Label("Nombre Completo: " + jugador.getNombreCompleto(), labelStyle);
+        Label nombreLabel = new Label(nombre + jugador.getNombreCompleto(), labelStyle);
         leftPanel.add(nombreLabel).padBottom(20).row();
         //Label usuarioLabel = new Label("Usuario: " + jugador.getIdentificadorUnico(), labelStyle);
-        Label usuarioLabel = new Label("Usuario: " + jugador.getNombreUsuario(), labelStyle);
+        Label usuarioLabel = new Label(usuario + jugador.getNombreUsuario(), labelStyle);
         leftPanel.add(usuarioLabel).padBottom(20).row();
-        Label fechaRegistroLabel = new Label("Fecha de registro: " + jugador.getFechaRegistro(), labelStyle);
+        Label fechaRegistroLabel = new Label(fecha + new Date(jugador.getFechaRegistro()), labelStyle);
         leftPanel.add(fechaRegistroLabel).padBottom(20).row();
-        Label ultimaSesionLabel = new Label("Ultima sesion: " + jugador.getUltimaSesion(), labelStyle);
+        Label ultimaSesionLabel = new Label(sesion + new Date(jugador.getUltimaSesion()), labelStyle);
         leftPanel.add(ultimaSesionLabel).padBottom(20).row();
-        Label progresoJuegoLabel = new Label("Progreso del juego: " + jugador.getProgresoJuego(), labelStyle);
+        Label progresoJuegoLabel = new Label(progreso + jugador.getProgresoJuego(), labelStyle);
         leftPanel.add(progresoJuegoLabel).padBottom(20).row();
-        Label tiempoJugadoLabel = new Label("Tiempo total jugado: " + jugador.getTiempoTotalJugado(), labelStyle);
+        Label tiempoJugadoLabel = new Label(tiempo + jugador.getTiempoTotalJugado(), labelStyle);
         leftPanel.add(tiempoJugadoLabel).padBottom(20).row();
 
         // Foto de perfil del jugador en el panel derecho (puedes reemplazar la imagen por la real del jugador)
         //Image perfilImage = new Image(new Texture(jugador.getAvatar()));  // Reemplazar con la imagen del jugador
         Image perfilImage = new Image(new Texture(jugador.getRutaAvatar()));
         perfilImage.setSize(20, 20); // Tamaño de la imagen de perfil
+        
+        String cambiar = español ? "Cambiar Foto" : "Change Profile Image";
+        String eliminar = español ? "Eliminar Cuenta" : "Delete Account";
 
         // Botones
-        TextButton cambiarImagenButton = new TextButton("Cambiar Imagen", skin);
-        TextButton eliminarCuentaButton = new TextButton("Eliminar Cuenta", skin);
+        TextButton cambiarImagenButton = new TextButton(cambiar, skin);
+        TextButton eliminarCuentaButton = new TextButton(eliminar, skin);
 
         // Acciones de los botones
         cambiarImagenButton.addListener(new ChangeListener() {

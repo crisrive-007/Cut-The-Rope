@@ -74,9 +74,13 @@ public class Nivel2 implements Screen {
     private Body bodyBox;
 
     private int puntos = 0;
+    private String idioma;
+    private boolean español;
     
-    public Nivel2(Usuario jugador) {
+    public Nivel2(Usuario jugador, String idioma) {
         this.jugador = jugador;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
     }
 
     @Override
@@ -87,7 +91,9 @@ public class Nivel2 implements Screen {
         world = new World(new Vector2(0, -25f), true);
         debugRenderer = new Box2DDebugRenderer();
 
-        fondoTextura = new Texture("fondo_rosquilleria.jpg");
+        String nombre_textura = español ? "fondo_rosquilleria.jpg" : "fondo_rosquilleria_ingles.jpg";
+
+        fondoTextura = new Texture(nombre_textura);
         
         pauseButtonTexture = new Texture("boton-pausa.png");
         resetButtonTexture = new Texture("boton-reinicio.png");
@@ -140,9 +146,11 @@ public class Nivel2 implements Screen {
         world.setContactListener(collisionDetector);
 
         Gdx.input.setInputProcessor(new InputAdapter() {
-            public boolean touchDragged(int screenX, int screenY, int pointer) {
-                Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
-                Vector2 touchPoint = new Vector2(worldCoordinates.x, worldCoordinates.y);
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                Vector3 worldCoords = camera.unproject(new Vector3(screenX, screenY, 0));
+                Vector2 touchPoint = new Vector2(worldCoords.x, worldCoords.y);
+
+                // Verificar si se tocó alguno de los botones
                 if (pauseButtonCircle.contains(touchPoint.x, touchPoint.y)) {
                     pausarJuego();
                     return true;
@@ -152,24 +160,35 @@ public class Nivel2 implements Screen {
                     reiniciarNivel();
                     return true;
                 }
+
+                return false;
+            }
+            
+            @Override
+            public boolean touchDragged(int screenX, int screenY, int pointer) {
+                Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+                Vector2 touchPoint = new Vector2(worldCoordinates.x, worldCoordinates.y);
                 if (cuerda1.detectarToque(new Vector2(worldCoordinates.x, worldCoordinates.y))) {
                     cuerda1.cortar();
-                } else if (cuerda2.detectarToque(new Vector2(worldCoordinates.x, worldCoordinates.y))) {
+                    return true;
+                } else if (cuerda2.detectarToque(touchPoint)) {
                     cuerda2.cortar();
-                } else if (cuerda3.detectarToque(new Vector2(worldCoordinates.x, worldCoordinates.y))) {
+                    return true;
+                } else if (cuerda3.detectarToque(touchPoint)) {
                     cuerda3.cortar();
+                    return true;
                 }
-                return true;
+                return false;
             }
         });
     }
     
     private void pausarJuego() {
-        new PantallaPausa(jugador, (Game)Gdx.app.getApplicationListener());
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaPausa(jugador, (Game)Gdx.app.getApplicationListener(), this, idioma));
     }
     
     private void reiniciarNivel() {
-        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador));
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador, idioma));
     }
 
     private void dulceTocoEstrella(int starIndex) {

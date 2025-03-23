@@ -34,9 +34,13 @@ public class MapaNiveles extends ScreenAdapter {
     private Texture background;
     //private Usuarios jugador;
     private Usuario jugador;
+    private String idioma;
+    private boolean español;
 
-    public MapaNiveles(Usuario jugador) {
+    public MapaNiveles(Usuario jugador, String idioma) {
         this.jugador = jugador;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
     }
 
     @Override
@@ -48,20 +52,21 @@ public class MapaNiveles extends ScreenAdapter {
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        // Crear los botones
-        level1Button = new TextButton("Nivel 1", crearBotonConColor(Color.valueOf("ffa899")));
-        level2Button = new TextButton("Nivel 2", crearBotonConColor(Color.valueOf("ff83eb")));
-        level3Button = new TextButton("Nivel 3", crearBotonConColor(Color.valueOf("83cfff")));
-        level4Button = new TextButton("Nivel 4", crearBotonConColor(Color.valueOf("673a30")));
-        level5Button = new TextButton("Nivel 5", crearBotonConColor(Color.valueOf("ffc580")));
-        exitButton = new TextButton("Salir", skin);
+        String nivel = español ? "Nivel" : "Level";
+        level1Button = new TextButton((nivel + " 1"), crearBotonConColor(Color.valueOf("ffa899")));
+        level2Button = new TextButton((nivel + " 2"), crearBotonConColor(Color.valueOf("ff83eb")));
+        level3Button = new TextButton((nivel + " 3"), crearBotonConColor(Color.valueOf("83cfff")));
+        level4Button = new TextButton((nivel + " 4"), crearBotonConColor(Color.valueOf("673a30")));
+        level5Button = new TextButton((nivel + " 5"), crearBotonConColor(Color.valueOf("ffc580")));
+        String salir = español ? "Salir" : "Exit";
+        exitButton = new TextButton(salir, skin);
 
         // Lógica de los botones para navegar a los siguientes niveles
         level1Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 1
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel1(jugador));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel1(jugador, idioma));
             }
         });
 
@@ -69,7 +74,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 2
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador, idioma));
             }
         });
 
@@ -77,7 +82,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla del Nivel 3
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador, idioma));
             }
         });
 
@@ -101,7 +106,7 @@ public class MapaNiveles extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Salir de la aplicación
-                Gdx.app.exit();
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(jugador));
             }
         });
 

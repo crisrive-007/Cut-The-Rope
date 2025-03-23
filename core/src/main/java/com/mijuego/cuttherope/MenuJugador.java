@@ -17,9 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -29,12 +26,21 @@ public class MenuJugador extends ScreenAdapter {
 
     private Stage stage;
     private Skin skin;
-    private TextButton playButton, profileButton, exitButton;
+    private TextButton playButton, profileButton, configButton;
     private Texture background, logoTexture;
     private Usuario jugador;
+    private MusicManager musica;
+    private String idioma;
+    private Preferencias prefer;
+    private boolean español;
 
     public MenuJugador(Usuario jugador) {
         this.jugador = jugador;
+        this.prefer = jugador.getPreferencias();
+        this.idioma = prefer.getIdioma();
+        this.español = idioma.equals("es");
+        musica = MusicManager.getInstance(jugador);
+        musica.initialize("musica/musica_juego.mp3");
     }
 
     @Override
@@ -51,18 +57,21 @@ public class MenuJugador extends ScreenAdapter {
 
         Image logoImage = new Image(logoTexture);
         logoImage.setSize(477, 209);
+        
+        String play = español ? "Jugar" : "Play";
+        String profile = español ? "Mi Perfil" : "My Profile";
+        String config = español ? "Configuracion" : "Settings";
 
-        // Crear los botones
-        playButton = new TextButton("Jugar", skin);
-        profileButton = new TextButton("Mi Perfil", skin);
-        exitButton = new TextButton("Configuracion", skin);
+        playButton = new TextButton(play, skin);
+        profileButton = new TextButton(profile, skin);
+        configButton = new TextButton(config, skin);
 
         // Establecer la lógica de los botones
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Cambiar a la pantalla de login
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MapaNiveles(jugador));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MapaNiveles(jugador, idioma));
             }
         });
 
@@ -72,21 +81,16 @@ public class MenuJugador extends ScreenAdapter {
                 // Aquí puedes agregar la pantalla de creación de cuenta (aún no implementada)
                 //ControlUsuarios controlUsuarios;
                 Control controlUsuarios;
-                /*try {*/
-                    //controlUsuarios = new ControlUsuarios("usuarios.dat");
-                    controlUsuarios = new Control();
-                /*} catch (IOException ex) {
-                    Logger.getLogger(MenuJugador.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MiPerfil(jugador));
+                controlUsuarios = new Control();
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MiPerfil(jugador, idioma));
             }
         });
 
-        exitButton.addListener(new ClickListener() {
+        configButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Salir de la aplicación
-                Gdx.app.exit();
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Configuracion(jugador, idioma));
             }
         });
 
@@ -100,7 +104,7 @@ public class MenuJugador extends ScreenAdapter {
         // Agregar los botones a la tabla
         table.add(playButton).width(300).height(60).padBottom(20).row();
         table.add(profileButton).width(300).height(60).padBottom(20).row();
-        table.add(exitButton).width(300).height(60);
+        table.add(configButton).width(300).height(60);
 
         // Añadir la tabla al stage
         stage.addActor(table);

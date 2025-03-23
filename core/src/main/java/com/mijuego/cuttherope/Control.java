@@ -27,7 +27,7 @@ import javax.imageio.ImageIO;
  */
 public class Control {
 
-    private static final String DIRECTORIO_BASE = "gameData";
+    private static final String DIRECTORIO_BASE = "usuarios";
     private static final String ARCHIVO_USUARIOS = "usuarios.ser";
     private Map<String, Usuario> usuarios;
 
