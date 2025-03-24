@@ -4,20 +4,20 @@
  */
 package com.mijuego.cuttherope;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
@@ -33,6 +33,8 @@ public class Amigos extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private com.badlogic.gdx.scenes.scene2d.ui.List<String> friendsList;
+    private TextButton exitButton;
+    private Texture background;
     private Array<String> friends;
     private Usuario usuario;
 
@@ -51,8 +53,12 @@ public class Amigos extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
+        
+        background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        
+        exitButton = new TextButton("Salir", skin);
 
         Table mainTable = new Table(skin);
         mainTable.setFillParent(true);
@@ -109,9 +115,20 @@ public class Amigos extends ScreenAdapter {
                         actualizarListaAmigos();
                     }
                 }
-                actualizarListaAmigos();
             }
         });
+        
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Salir de la aplicación
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MiPerfil(usuario, "es"));
+            }
+        });
+
+        stage.addActor(exitButton);
+        exitButton.setSize(80, 30);
+        exitButton.setPosition(10, 820);
     }
     
     public void actualizarListaAmigos() {
@@ -128,6 +145,9 @@ public class Amigos extends ScreenAdapter {
     public void render(float delta) {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stage.getBatch().begin();
+        stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage.getBatch().end();
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }

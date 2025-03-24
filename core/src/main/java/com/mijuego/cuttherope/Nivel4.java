@@ -15,7 +15,9 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import java.util.HashSet;
@@ -25,7 +27,8 @@ import java.util.Set;
  *
  * @author river
  */
-public class Nivel5 implements Screen {
+public class Nivel4 implements Screen {
+
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
@@ -35,10 +38,9 @@ public class Nivel5 implements Screen {
     private Set<Integer> collidedStars = new HashSet<>();
     private Set<Body> collidedRana = new HashSet<>();
     private Dulce dulce;
-    private Cuerda cuerda1, cuerda2, cuerda3, cuerda4, cuerda5, cuerda6;
-    private Gancho gancho1, gancho2, gancho3, gancho4, gancho5, gancho6;
-    private Tabla tabla1;
-    private Sombrero sombrero1, sombrero2, sombrero3, sombrero4;
+    private Cuerda cuerda1;
+    private Gancho gancho1;
+    private Sombrero sombrero1, sombrero2;
     private CollisionDetector collisionDetector;
     private OmNom omNom;
 
@@ -59,20 +61,21 @@ public class Nivel5 implements Screen {
     private String idioma;
     private boolean español;
 
-    public Nivel5(Usuario jugador, String idioma) {
+    public Nivel4(Usuario jugador, String idioma) {
         this.jugador = jugador;
         this.idioma = idioma;
         this.español = idioma.equals("es");
     }
 
-    @Override
     public void show() {
         batch = new SpriteBatch();
         bodiesToRemove = new Array<>();
         world = new World(new Vector2(0, -25f), true);
         debugRenderer = new Box2DDebugRenderer();
 
-        fondoTextura = new Texture("fondo_reposteria.jpg");
+        String nombre_textura = español ? "fondo_chocolateria.jpg" : "fondo_chocolateria_ingles.jpg";
+
+        fondoTextura = new Texture(nombre_textura);
 
         pauseButtonTexture = new Texture("boton-pausa.png");
         resetButtonTexture = new Texture("boton-reinicio.png");
@@ -84,7 +87,6 @@ public class Nivel5 implements Screen {
         camera.position.set(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0);
         camera.update();
 
-        // Configurar posición de los botones
         float topY = SCREEN_HEIGHT - BUTTON_RADIUS + 5.5f;
         float leftX = BUTTON_RADIUS - 11.5f;
 
@@ -98,9 +100,9 @@ public class Nivel5 implements Screen {
         };
 
         starPositions = new Vector2[]{
-            new Vector2(SCREEN_WIDTH * 0.7f, SCREEN_HEIGHT * 0.4f),
-            new Vector2(SCREEN_WIDTH * 0.27f, SCREEN_HEIGHT * 0.25f),
-            new Vector2(SCREEN_WIDTH * 0.9f, SCREEN_HEIGHT * 0.4f)
+            new Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1),
+            new Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2),
+            new Vector2(Math.round(SCREEN_WIDTH / 2), 3)
         };
 
         starRectangles = new Rectangle[starTextures.length];
@@ -108,37 +110,19 @@ public class Nivel5 implements Screen {
             starRectangles[i] = new Rectangle(starPositions[i].x - 1, starPositions[i].y - 1, 2, 2);
         }
 
-        dulce = new Dulce(world, Math.round(SCREEN_WIDTH * 0.5f), Math.round(SCREEN_HEIGHT * 0.75f), 32, new Texture("dulce5.png"));
+        dulce = new Dulce(world, Math.round(SCREEN_WIDTH / 2 + 5), Math.round(SCREEN_HEIGHT + 3), 32, new Texture("dulce4.png"));
 
-        sombrero1 = new Sombrero(world, new Vector2(SCREEN_WIDTH * 0.7f, SCREEN_HEIGHT * 0.2f), "rojo", 180);
-        sombrero2 = new Sombrero(world, new Vector2(SCREEN_WIDTH * 0.16f, SCREEN_HEIGHT * 0.3f), "azul", 60);
-        sombrero3 = new Sombrero(world, new Vector2(SCREEN_WIDTH * 0.9f, SCREEN_HEIGHT * 0.8f), "rojo", 0);
-        sombrero4 = new Sombrero(world, new Vector2(SCREEN_WIDTH * 0.9f, SCREEN_HEIGHT * 0.2f), "azul", 180);
+        gancho1 = new Gancho(world, SCREEN_WIDTH / 2 + 7, SCREEN_HEIGHT + 3);
 
-        Sombrero.conectarSombreros(sombrero1, sombrero3);
-        Sombrero.conectarSombreros(sombrero2, sombrero4);
+        sombrero1 = new Sombrero(world, new Vector2(SCREEN_WIDTH / 2 + 5, SCREEN_HEIGHT / 2 - 2), "Rojo", 150);
+        sombrero2 = new Sombrero(world, new Vector2(SCREEN_WIDTH / 2, SCREEN_HEIGHT + 2), "Rojo", 0);
 
-        float centroX = SCREEN_WIDTH / 2;
-        float centroY = SCREEN_HEIGHT * 0.8f;
-        float radio = 5.0f; // Ajusta el radio según necesidad
+        //Para conectar los sombreros hacia cual se ba a teletransportar el dulce
+        Sombrero.conectarSombreros(sombrero1, sombrero2);
 
-        gancho1 = new Gancho(world, centroX + radio * (float) Math.cos(0), centroY + radio * (float) Math.sin(0));
-        gancho2 = new Gancho(world, centroX + radio * (float) Math.cos(Math.PI / 3), centroY + radio * (float) Math.sin(Math.PI / 3));
-        gancho3 = new Gancho(world, centroX + radio * (float) Math.cos(2 * Math.PI / 3), centroY + radio * (float) Math.sin(2 * Math.PI / 3));
-        gancho4 = new Gancho(world, centroX + radio * (float) Math.cos(Math.PI), centroY + radio * (float) Math.sin(Math.PI));
-        gancho5 = new Gancho(world, centroX + radio * (float) Math.cos(4 * Math.PI / 3), centroY + radio * (float) Math.sin(4 * Math.PI / 3));
-        gancho6 = new Gancho(world, centroX + radio * (float) Math.cos(5 * Math.PI / 3), centroY + radio * (float) Math.sin(5 * Math.PI / 3));
+        cuerda1 = new Cuerda(world, dulce, gancho1.getBody().getPosition(), 9f, 0.25f, 5);
 
-        tabla1 = new Tabla(world, new Vector2(SCREEN_WIDTH * 0.2f, SCREEN_HEIGHT * 0.1f), 4f, 0.5f, -30);
-
-        cuerda1 = new Cuerda(world, dulce, gancho1.getBody().getPosition(), 5f, 0.25f, 5);
-        cuerda2 = new Cuerda(world, dulce, gancho2.getBody().getPosition(), 5f, 0.25f, 5);
-        cuerda3 = new Cuerda(world, dulce, gancho3.getBody().getPosition(), 5f, 0.25f, 5);
-        cuerda4 = new Cuerda(world, dulce, gancho4.getBody().getPosition(), 5f, 0.25f, 5);
-        cuerda5 = new Cuerda(world, dulce, gancho5.getBody().getPosition(), 5f, 0.25f, 5);
-        cuerda6 = new Cuerda(world, dulce, gancho6.getBody().getPosition(), 5f, 0.25f, 5);
-
-        omNom = new OmNom(world, Math.round(SCREEN_WIDTH * 0.29f), Math.round(SCREEN_HEIGHT * 0.02f));
+        omNom = new OmNom(world, Math.round(SCREEN_WIDTH / 2), -3);
 
         // ⭐ Inicializar estrellas
         starCollected = new boolean[starTextures.length];
@@ -172,28 +156,19 @@ public class Nivel5 implements Screen {
 
                 if (cuerda1.detectarToque(touchPoint)) {
                     cuerda1.cortar();
-                } else if (cuerda2.detectarToque(touchPoint)) {
-                    cuerda2.cortar();
-                } else if (cuerda3.detectarToque(touchPoint)) {
-                    cuerda3.cortar();
-                } else if (cuerda4.detectarToque(touchPoint)) {
-                    cuerda4.cortar();
-                } else if (cuerda5.detectarToque(touchPoint)) {
-                    cuerda5.cortar();
-                } else if (cuerda6.detectarToque(touchPoint)) {
-                    cuerda6.cortar();
+                    return true;
                 }
-                return true;
+                return false;
             }
         });
     }
-    
+
     private void pausarJuego() {
         ((Game) Gdx.app.getApplicationListener()).setScreen(new PantallaPausa(jugador, (Game) Gdx.app.getApplicationListener(), this, idioma));
     }
 
     private void reiniciarNivel() {
-        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel5(jugador, idioma));
+        ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel4(jugador, idioma));
     }
 
     private void dulceTocoEstrella(int starIndex) {
@@ -201,17 +176,21 @@ public class Nivel5 implements Screen {
         float dy = dulce.getBody().getPosition().y - starPositions[starIndex].y;
         float distancia = (float) Math.sqrt(dx * dx + dy * dy);
 
+        System.out.println("Distancia entre dulce y estrella " + starIndex + ": " + distancia);
+
         float radioColision = 1.0f; // Ajusta según el tamaño del dulce y la estrella
 
         if (distancia < radioColision && !collidedStars.contains(starIndex)) {
             puntos += 1;
+            System.out.println("¡Colisión con estrella! Puntos: " + puntos);
             collidedStars.add(starIndex);
             starCollected[starIndex] = true;
+            System.out.println("Se recogió la estrella " + starIndex + " -> " + starCollected[starIndex]);
         }
     }
 
     private void verificarColisionDulceSombrero() {
-        Sombrero[] sombreros = {sombrero1, sombrero2, sombrero3, sombrero4};
+        Sombrero[] sombreros = {sombrero1, sombrero2};
 
         for (Sombrero sombrero : sombreros) {
             if (sombrero != null) {
@@ -220,24 +199,17 @@ public class Nivel5 implements Screen {
         }
     }
 
-    @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
         world.step(1 / 60f, 8, 3);
-
         verificarColisionDulceSombrero();
-
-        cuerda1.update();
-        cuerda2.update();
-        cuerda3.update();
-        cuerda4.update();
-        cuerda5.update();
-        cuerda6.update();
 
         for (Body body : bodiesToRemove) {
             world.destroyBody(body);
         }
         bodiesToRemove.clear();
+
+        cuerda1.update();
 
         debugRenderer.render(world, camera.combined);
         batch.setProjectionMatrix(camera.combined);
@@ -251,42 +223,22 @@ public class Nivel5 implements Screen {
             }
         }
 
-        for (int i = 0; i < starTextures.length; i++) {
-            System.out.println("Posición estrella " + i + ": (" + starPositions[i].x + ", " + starPositions[i].y + ")");
-        }
-
         batch.begin();
-        
+
         batch.draw(fondoTextura,
                 camera.position.x - camera.viewportWidth / 2,
                 camera.position.y - camera.viewportHeight / 2,
                 camera.viewportWidth, camera.viewportHeight);
         cuerda1.draw(batch);
-        cuerda2.draw(batch);
-        cuerda3.draw(batch);
-        cuerda4.draw(batch);
-        cuerda5.draw(batch);
-        cuerda6.draw(batch);
-        gancho1.draw(batch);
-        gancho2.draw(batch);
-        gancho3.draw(batch);
-        gancho4.draw(batch);
-        gancho5.draw(batch);
-        gancho6.draw(batch);
         sombrero1.draw(batch);
         sombrero2.draw(batch);
-        sombrero3.draw(batch);
-        sombrero4.draw(batch);
+
+        gancho1.draw(batch);
 
         for (int i = 0; i < starTextures.length; i++) {
             if (!starCollected[i]) {
                 batch.draw(starTextures[i], starPositions[i].x - 1, starPositions[i].y - 1, 2, 2);
             }
-        }
-        tabla1.draw(batch);
-
-        for (int i = 0; i < starTextures.length; i++) {
-            System.out.println("Estado estrella " + i + ": " + starCollected[i]);
         }
 
         if (dulce != null) {
@@ -294,7 +246,7 @@ public class Nivel5 implements Screen {
         }
 
         omNom.draw(batch);
-        
+
         batch.draw(pauseButtonTexture,
                 pauseButtonCircle.x - pauseButtonCircle.radius,
                 pauseButtonCircle.y - pauseButtonCircle.radius,
@@ -306,6 +258,7 @@ public class Nivel5 implements Screen {
                 resetButtonCircle.y - resetButtonCircle.radius,
                 resetButtonCircle.radius * 2,
                 resetButtonCircle.radius * 2);
+
         batch.end();
     }
 

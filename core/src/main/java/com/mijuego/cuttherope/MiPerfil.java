@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -34,6 +36,7 @@ public class MiPerfil extends ScreenAdapter {
     private Stage stage;
     private Texture background, logoTexture;
     private Skin skin;
+    private TextButton exitButton;
     //private Usuarios jugador;
     private Usuario jugador;
     private String idioma;
@@ -52,10 +55,12 @@ public class MiPerfil extends ScreenAdapter {
 
         background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
         logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
-
+        
         BitmapFont font = new BitmapFont(Gdx.files.internal("fuente.fnt"), false);
         Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        
+        exitButton = new TextButton("Salir", skin);
 
         Image logoImage = new Image(logoTexture);
         logoImage.setSize(477, 209);  // Tamaño del logo
@@ -114,6 +119,14 @@ public class MiPerfil extends ScreenAdapter {
         TextButton cambiarImagenButton = new TextButton(cambiar, skin);
         TextButton eliminarCuentaButton = new TextButton(eliminar, skin);
         TextButton agregarAmigosButton = new TextButton(agregarAmigos, skin);
+        
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Salir de la aplicación
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(jugador));
+            }
+        });
 
         // Acciones de los botones
         cambiarImagenButton.addListener(new ChangeListener() {
@@ -151,6 +164,9 @@ public class MiPerfil extends ScreenAdapter {
         mainTable.add(rightPanel).right();
 
         // Agregar la tabla principal al stage
+        stage.addActor(exitButton);
+        exitButton.setSize(80, 30);
+        exitButton.setPosition(10, 820);
     }
 
     @Override

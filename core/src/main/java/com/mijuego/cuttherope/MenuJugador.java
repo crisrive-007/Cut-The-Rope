@@ -26,7 +26,7 @@ public class MenuJugador extends ScreenAdapter {
 
     private Stage stage;
     private Skin skin;
-    private TextButton playButton, profileButton, configButton;
+    private TextButton playButton, profileButton, configButton, csesionButton, rankingButton;
     private Texture background, logoTexture;
     private Usuario jugador;
     private MusicManager musica;
@@ -57,14 +57,18 @@ public class MenuJugador extends ScreenAdapter {
 
         Image logoImage = new Image(logoTexture);
         logoImage.setSize(477, 209);
-        
+
         String play = español ? "Jugar" : "Play";
         String profile = español ? "Mi Perfil" : "My Profile";
         String config = español ? "Configuracion" : "Settings";
+        String sesion = español ? "Cerrar Sesion" : "Log out";
+        String ranking = español ? "Tabla de Rangos" : "Ranking";
 
         playButton = new TextButton(play, skin);
         profileButton = new TextButton(profile, skin);
         configButton = new TextButton(config, skin);
+        csesionButton = new TextButton(sesion, skin);
+        rankingButton = new TextButton(ranking, skin);
 
         // Establecer la lógica de los botones
         playButton.addListener(new ClickListener() {
@@ -93,6 +97,22 @@ public class MenuJugador extends ScreenAdapter {
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new Configuracion(jugador, idioma));
             }
         });
+        csesionButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Lógica para cerrar sesión
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuPrincipal()); // Cambia LoginScreen por la pantalla de login
+            }
+        });
+
+        rankingButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Lógica para mostrar ranking
+
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Ranking(jugador, idioma)); // Cambia RankingScreen por la pantalla de ranking
+            }
+        });
 
         // Crear una tabla para organizar los botones
         Table table = new Table();
@@ -104,7 +124,9 @@ public class MenuJugador extends ScreenAdapter {
         // Agregar los botones a la tabla
         table.add(playButton).width(300).height(60).padBottom(20).row();
         table.add(profileButton).width(300).height(60).padBottom(20).row();
-        table.add(configButton).width(300).height(60);
+        table.add(configButton).width(300).height(60).padBottom(20).row();
+        table.add(csesionButton).width(300).height(60).padBottom(20).row();
+        table.add(rankingButton).width(300).height(60);
 
         // Añadir la tabla al stage
         stage.addActor(table);
