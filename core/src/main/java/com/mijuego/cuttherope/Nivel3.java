@@ -65,6 +65,7 @@ public class Nivel3 implements Screen {
         this.jugador = jugador;
         this.idioma = idioma;
         this.español = idioma.equals("es");
+        jugador.getProgresoJuego().setJugandonivel(3);
     }
 
     @Override

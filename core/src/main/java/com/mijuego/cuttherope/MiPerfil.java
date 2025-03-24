@@ -116,7 +116,7 @@ public class MiPerfil extends ScreenAdapter {
 
         String cambiar = español ? "Cambiar Foto" : "Change Profile Image";
         String eliminar = español ? "Eliminar Cuenta" : "Delete Account";
-        String agregarAmigos = español ? "Agregar Amigos" : "Add Friends";
+        String agregarAmigos = español ? "Mostrar Amigos" : "Show Friends";
 
         // Botones
         TextButton cambiarImagenButton = new TextButton(cambiar, skin);
@@ -134,8 +134,10 @@ public class MiPerfil extends ScreenAdapter {
         eliminarCuentaButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Aquí va la lógica para eliminar la cuenta del jugador
-                System.out.println("Eliminar cuenta");
+                Control control  = new Control();
+                if(control.eliminarCuenta(jugador.getNombreUsuario())) {
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuPrincipal());
+                }
             }
         });
 

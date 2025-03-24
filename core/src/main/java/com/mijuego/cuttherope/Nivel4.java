@@ -65,6 +65,7 @@ public class Nivel4 implements Screen {
         this.jugador = jugador;
         this.idioma = idioma;
         this.español = idioma.equals("es");
+        jugador.getProgresoJuego().setJugandonivel(4);
     }
 
     public void show() {

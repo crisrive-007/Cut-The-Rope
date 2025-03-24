@@ -4,6 +4,11 @@
  */
 package com.mijuego.cuttherope;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -71,5 +76,26 @@ public class Partida implements Serializable{
 
     public List<String> getLogros() {
         return logros;
+    }
+
+    // Método para guardar la partida en un archivo
+    public boolean guardarPartida(String nombreArchivo) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(nombreArchivo))) {
+            oos.writeObject(this);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Método para cargar una partida desde un archivo
+    public static Partida cargarPartida(String nombreArchivo) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(nombreArchivo))) {
+            return (Partida) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

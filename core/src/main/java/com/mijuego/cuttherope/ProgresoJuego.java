@@ -20,6 +20,7 @@ public class ProgresoJuego implements Serializable {
     private Map<Integer, Integer> puntajesPorNivel;
     private Map<Integer, Boolean> nivelesCompletados;
     private int estrellasTotales;
+    private int  jugandonivel;
 
     public ProgresoJuego() {
         this.nivelActual = 1;
@@ -57,6 +58,14 @@ public class ProgresoJuego implements Serializable {
 
     public int getEstrellasTotales() {
         return estrellasTotales;
+    }
+
+    public int getJugandonivel() {
+        return jugandonivel;
+    }
+
+    public void setJugandonivel(int jugandonivel) {
+        this.jugandonivel = jugandonivel;
     }
 
     public void agregarEstrellas(int estrellas) {

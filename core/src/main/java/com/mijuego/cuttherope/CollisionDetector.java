@@ -155,16 +155,22 @@ public class CollisionDetector extends Thread implements ContactListener {
                         } else {
                             JOptionPane.showMessageDialog(null, "Congratulations! You won.\nStars obtained:" + puntos);
                         }
-                        Control control = new Control();
-                        control.sumarPuntos(jugador.getNombreUsuario(), puntos);
-                        control.actualizarProgresoNivel(jugador.getNombreUsuario(), control.obtenerNivelActual(jugador.getNombreUsuario()) + 1, puntos, puntos);
-                        jugador.getProgresoJuego().completarNivel(jugador.getProgresoJuego().getNivelActual());
-                        jugador.getProgresoJuego().setNivelActual(jugador.getProgresoJuego().getNivelActual());
+                        if (jugador.getProgresoJuego().getJugandonivel() == jugador.getProgresoJuego().getNivelActual()) {
+                            Control control = new Control();
+                            control.sumarPuntos(jugador.getNombreUsuario(), puntos);
+                            control.actualizarProgresoNivel(jugador.getNombreUsuario(), control.obtenerNivelActual(jugador.getNombreUsuario()), puntos, puntos);
+                            jugador.getProgresoJuego().completarNivel(jugador.getProgresoJuego().getNivelActual());
+                            jugador.getProgresoJuego().setNivelActual(jugador.getProgresoJuego().getNivelActual());
+                        }
                         Gdx.app.postRunnable(() -> ((Game) Gdx.app.getApplicationListener()).setScreen(new MapaNiveles(jugador, idioma)));
                     }
                 }, 0.09f);
             });
         }
+    }
+
+    public int getPuntos() {
+        return puntos;
     }
 
     @Override

@@ -76,11 +76,15 @@ public class Nivel1 implements Screen {
     private int puntos = 0;
     private String idioma;
     private boolean español;
-    
+    private boolean runningTimeThread = true;
+    private Thread timeTrackerThread;
+    private int tiempoJugado = 0;
+
     public Nivel1(Usuario jugador, String idioma) {
         this.jugador = jugador;
         this.idioma = idioma;
         this.español = idioma.equals("es");
+        jugador.getProgresoJuego().setJugandonivel(1);
     }
 
     @Override
@@ -151,6 +155,8 @@ public class Nivel1 implements Screen {
         collisionDetector.start();
         world.setContactListener(collisionDetector);
 
+        iniciarHiloTiempo();
+
         // Configurar el procesador de entrada para detectar toques en la cuerda y botones
         Gdx.input.setInputProcessor(new InputAdapter() {
             @Override
@@ -171,7 +177,7 @@ public class Nivel1 implements Screen {
 
                 return false;
             }
-            
+
             @Override
             public boolean touchDragged(int screenX, int screenY, int pointer) {
                 Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
@@ -183,6 +189,30 @@ public class Nivel1 implements Screen {
                 return false;
             }
         });
+    }
+    
+    private void guardarPartida() {
+        Partida partida = new Partida(1); // Nivel 1 (o el que corresponda)
+        partida.completarPartida(collisionDetector.getPuntos(), tiempoJugado, collisionDetector.getPuntos());
+
+        if (partida.guardarPartida("partidaGuardada.dat")) {
+            System.out.println("Partida guardada correctamente.");
+        } else {
+            System.out.println("Error al guardar la partida.");
+        }
+    }
+
+    private void iniciarHiloTiempo() {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(1000); // Espera 1 segundo
+                    tiempoJugado++; // Incrementa el tiempo jugado
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void pausarJuego() {
@@ -201,7 +231,7 @@ public class Nivel1 implements Screen {
             starCollected[starIndex] = true;
         }
     }
-    
+
     @Override
     public void render(float delta) {
         // Limpiar la pantalla

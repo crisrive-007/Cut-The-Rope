@@ -120,7 +120,7 @@ public class Control {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoAmigos))) {
             oos.writeObject(usuario.getAmigos());
         }
-        
+
         File archivoProgreso = new File(dirUsuario + "/progreso.ser");
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoProgreso))) {
             oos.writeObject(usuario.getProgresoJuego());
@@ -166,6 +166,54 @@ public class Control {
         } catch (Exception e) {
             System.err.println("Error al iniciar sesión: " + e.getMessage());
             return false;
+        }
+    }
+
+    public boolean eliminarCuenta(String nombreUsuario) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(null, "El usuario no existe.");
+            return false;
+        }
+
+        int confirmacion = JOptionPane.showConfirmDialog(null,
+                "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.",
+                "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+
+        if (confirmacion == JOptionPane.YES_OPTION) {
+            try {
+                // Eliminar usuario del mapa
+                usuarios.remove(nombreUsuario);
+                guardarUsuarios();
+
+                // Eliminar directorio del usuario
+                File dirUsuario = new File(DIRECTORIO_BASE + "/usuario_" + nombreUsuario);
+                eliminarDirectorio(dirUsuario);
+
+                JOptionPane.showMessageDialog(null, "Cuenta eliminada exitosamente.");
+                return true;
+            } catch (Exception e) {
+                System.err.println("Error al eliminar la cuenta: " + e.getMessage());
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private void eliminarDirectorio(File directorio) {
+        if (directorio.exists()) {
+            File[] archivos = directorio.listFiles();
+            if (archivos != null) {
+                for (File archivo : archivos) {
+                    if (archivo.isDirectory()) {
+                        eliminarDirectorio(archivo);
+                    } else {
+                        archivo.delete();
+                    }
+                }
+            }
+            directorio.delete();
         }
     }
 
@@ -801,7 +849,7 @@ public class Control {
         }
         return usuario.getPuntuacionGeneral();
     }
-    
+
     public boolean actualizarProgresoNivel(String nombreUsuario, int nivel, int puntaje, int estrellas) {
         Usuario usuario = usuarios.get(nombreUsuario);
         if (usuario == null) {
