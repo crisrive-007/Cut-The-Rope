@@ -4,6 +4,7 @@
  */
 package com.mijuego.cuttherope;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -23,13 +24,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author river
  */
 public class MiPerfil extends ScreenAdapter {
-
     private Stage stage;
     private Texture background, logoTexture;
     private Skin skin;
@@ -77,7 +78,7 @@ public class MiPerfil extends ScreenAdapter {
         float panelWidth = Gdx.graphics.getWidth() / 2;  // Cada panel ocupa la mitad del ancho de la pantalla
         leftPanel.setSize(panelWidth, Gdx.graphics.getHeight());
         rightPanel.setSize(panelWidth, Gdx.graphics.getHeight());
-        
+
         String nombre = español ? "Nombre Completo: " : "Full Name: ";
         String usuario = español ? "Usuario: " : "Username: ";
         String fecha = español ? "Fecha de Registro: " : "Registration Date: ";
@@ -104,13 +105,15 @@ public class MiPerfil extends ScreenAdapter {
         //Image perfilImage = new Image(new Texture(jugador.getAvatar()));  // Reemplazar con la imagen del jugador
         Image perfilImage = new Image(new Texture(jugador.getRutaAvatar()));
         perfilImage.setSize(20, 20); // Tamaño de la imagen de perfil
-        
+
         String cambiar = español ? "Cambiar Foto" : "Change Profile Image";
         String eliminar = español ? "Eliminar Cuenta" : "Delete Account";
+        String agregarAmigos = español ? "Agregar Amigos" : "Add Friends";
 
         // Botones
         TextButton cambiarImagenButton = new TextButton(cambiar, skin);
         TextButton eliminarCuentaButton = new TextButton(eliminar, skin);
+        TextButton agregarAmigosButton = new TextButton(agregarAmigos, skin);
 
         // Acciones de los botones
         cambiarImagenButton.addListener(new ChangeListener() {
@@ -128,15 +131,23 @@ public class MiPerfil extends ScreenAdapter {
             }
         });
 
+        agregarAmigosButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Amigos(jugador));
+            }
+        });
+
         // Agregar la foto de perfil y los botones al panel derecho
         rightPanel.add(perfilImage).size(220, 220).padBottom(20).row();  // Foto de perfil
         rightPanel.add(cambiarImagenButton).padBottom(10).row();  // Botón cambiar imagen
+        rightPanel.add(agregarAmigosButton).padBottom(10).row();  // Botón agregar amigos
         rightPanel.add(eliminarCuentaButton).padBottom(10).row();  // Botón eliminar cuenta
 
         // Agregar los paneles a la tabla principal, alineados a la izquierda y derecha
         mainTable.add(logoImage).colspan(2).center().padBottom(20); // Logo en la parte superior centrado
         mainTable.row();  // Nueva fila
-        mainTable.add(leftPanel).left(); 
+        mainTable.add(leftPanel).left();
         mainTable.add(rightPanel).right();
 
         // Agregar la tabla principal al stage

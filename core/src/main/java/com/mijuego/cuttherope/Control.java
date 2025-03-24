@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -113,6 +114,11 @@ public class Control {
         File archivoPreferencias = new File(dirUsuario + "/preferencias.ser");
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoPreferencias))) {
             oos.writeObject(usuario.getPreferencias());
+        }
+        
+        File archivoAmigos = new File(dirUsuario + "/amigos.ser");
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoAmigos))) {
+            oos.writeObject(usuario.getAmigos());
         }
     }
 
@@ -246,7 +252,7 @@ public class Control {
         }
 
         try {
-            usuario.agregarAmigo(nombreAmigo);
+            enviarSolicitudAmistad(nombreUsuario, nombreAmigo);
             guardarUsuarios();
             guardarUsuarioIndividual(usuario);
             return true;
@@ -467,4 +473,230 @@ public class Control {
             return null;
         }
     }
+    public boolean enviarSolicitudAmistad(String nombreUsuarioSolicitante, String nombreUsuarioDestino) {
+        Usuario solicitante = usuarios.get(nombreUsuarioSolicitante);
+        Usuario destinatario = usuarios.get(nombreUsuarioDestino);
+
+        if (solicitante == null || destinatario == null) {
+            JOptionPane.showMessageDialog(null, "Este usuario no existe.");
+            return false;
+        }
+
+        for (Amigo amigo : solicitante.getAmigos()) {
+            if (amigo.getAmigo().getNombreUsuario().equals(nombreUsuarioDestino) && amigo.isAceptado()) {
+                JOptionPane.showMessageDialog(null, "Este usuario ya es tu amigo.");
+                return false;
+            }
+        }
+        
+        if (solicitante == destinatario) {
+            JOptionPane.showMessageDialog(null, "No puedes agregarte a ti mismo.");
+            return false;
+        }
+
+        try {
+            Amigo nuevoAmigo = new Amigo(solicitante);
+            destinatario.getAmigos().add(nuevoAmigo);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al enviar solicitud de amistad: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+// Método para aceptar una solicitud de amistad pendiente
+    public boolean aceptarSolicitudAmistad(String nombreUsuarioAceptante, String nombreUsuarioSolicitante) {
+        Usuario aceptante = usuarios.get(nombreUsuarioAceptante);
+        Usuario solicitante = usuarios.get(nombreUsuarioSolicitante);
+
+        if (aceptante == null || solicitante == null) {
+            JOptionPane.showMessageDialog(null, "Este usuario no existe.");
+            return false;
+        }
+
+        // Buscar la solicitud pendiente
+        boolean solicitudEncontrada = false;
+        for (Amigo amigo : aceptante.getAmigos()) {
+            if (amigo.getAmigo().getNombreUsuario().equals(nombreUsuarioSolicitante) && !amigo.isAceptado()) {
+                amigo.aceptarSolicitud();
+                solicitudEncontrada = true;
+                break;
+            }
+        }
+
+        if (!solicitudEncontrada) {
+            System.out.println("No hay solicitud pendiente de " + nombreUsuarioSolicitante);
+            return false;
+        }
+
+        // Crear relación bidireccional (si no existe ya)
+        boolean relacionInversa = false;
+        for (Amigo amigo : solicitante.getAmigos()) {
+            if (amigo.getAmigo().getNombreUsuario().equals(nombreUsuarioAceptante)) {
+                amigo.aceptarSolicitud();
+                relacionInversa = true;
+                break;
+            }
+        }
+
+        if (!relacionInversa) {
+            Amigo amigoInverso = new Amigo(aceptante);
+            amigoInverso.aceptarSolicitud();
+            solicitante.getAmigos().add(amigoInverso);
+        }
+
+        try {
+            // Guardar los cambios
+            guardarUsuarios();
+            guardarUsuarioIndividual(aceptante);
+            guardarUsuarioIndividual(solicitante);
+
+            System.out.println("Solicitud de amistad aceptada entre "
+                    + nombreUsuarioAceptante + " y " + nombreUsuarioSolicitante);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al aceptar solicitud de amistad: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+// Método para rechazar una solicitud de amistad
+    public boolean rechazarSolicitudAmistad(String nombreUsuarioRechazante, String nombreUsuarioSolicitante) {
+        Usuario rechazante = usuarios.get(nombreUsuarioRechazante);
+
+        if (rechazante == null) {
+            System.out.println("Usuario no encontrado.");
+            return false;
+        }
+
+        boolean solicitudEliminada = false;
+        List<Amigo> amigos = rechazante.getAmigos();
+        for (int i = 0; i < amigos.size(); i++) {
+            if (amigos.get(i).getAmigo().getNombreUsuario().equals(nombreUsuarioSolicitante)
+                    && !amigos.get(i).isAceptado()) {
+                amigos.remove(i);
+                solicitudEliminada = true;
+                break;
+            }
+        }
+
+        if (!solicitudEliminada) {
+            System.out.println("No hay solicitud pendiente de " + nombreUsuarioSolicitante);
+            return false;
+        }
+
+        try {
+            // Guardar los cambios
+            guardarUsuarios();
+            guardarUsuarioIndividual(rechazante);
+
+            System.out.println("Solicitud de amistad rechazada de " + nombreUsuarioSolicitante);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al rechazar solicitud de amistad: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+// Método para eliminar un amigo
+    public boolean eliminarAmigo(String nombreUsuario, String nombreAmigo) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        Usuario amigo = usuarios.get(nombreAmigo);
+
+        if (usuario == null || amigo == null) {
+            JOptionPane.showMessageDialog(null, "Este usuario no existe");
+            return false;
+        }
+
+        boolean amigoEliminado = false;
+        List<Amigo> listaAmigos = usuario.getAmigos();
+        for (int i = 0; i < listaAmigos.size(); i++) {
+            if (listaAmigos.get(i).getAmigo().getNombreUsuario().equals(nombreAmigo)) {
+                listaAmigos.remove(i);
+                amigoEliminado = true;
+                break;
+            }
+        }
+
+        List<Amigo> listaAmigosInversa = amigo.getAmigos();
+        for (int i = 0; i < listaAmigosInversa.size(); i++) {
+            if (listaAmigosInversa.get(i).getAmigo().getNombreUsuario().equals(nombreUsuario)) {
+                listaAmigosInversa.remove(i);
+                break;
+            }
+        }
+
+        if (!amigoEliminado) {
+            JOptionPane.showMessageDialog(null, nombreAmigo + " no es amigo de " + nombreUsuario);
+            return false;
+        }
+
+        try {
+            // Guardar los cambios
+            guardarUsuarios();
+            guardarUsuarioIndividual(usuario);
+            guardarUsuarioIndividual(amigo);
+            
+            JOptionPane.showMessageDialog(null, nombreAmigo + " ya no es tu amigo.");
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al eliminar amigo: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+// Método para obtener los amigos aceptados de un usuario
+    public List<Usuario> obtenerAmigosAceptados(String nombreUsuario) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            return new ArrayList<>();
+        }
+
+        List<Usuario> amigosAceptados = new ArrayList<>();
+        for (Amigo amigo : usuario.getAmigos()) {
+            if (amigo.isAceptado()) {
+                amigosAceptados.add(amigo.getAmigo());
+            }
+        }
+
+        return amigosAceptados;
+    }
+
+// Método para obtener las solicitudes de amistad pendientes
+    public List<Usuario> obtenerSolicitudesPendientes(String nombreUsuario) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            return new ArrayList<>();
+        }
+
+        List<Usuario> solicitudesPendientes = new ArrayList<>();
+        for (Amigo amigo : usuario.getAmigos()) {
+            if (!amigo.isAceptado()) {
+                solicitudesPendientes.add(amigo.getAmigo());
+            }
+        }
+
+        return solicitudesPendientes;
+    }
+
+// Método para verificar si dos usuarios son amigos
+    public boolean sonAmigos(String nombreUsuario1, String nombreUsuario2) {
+        Usuario usuario1 = usuarios.get(nombreUsuario1);
+        if (usuario1 == null) {
+            return false;
+        }
+
+        for (Amigo amigo : usuario1.getAmigos()) {
+            if (amigo.getAmigo().getNombreUsuario().equals(nombreUsuario2) && amigo.isAceptado()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
 }

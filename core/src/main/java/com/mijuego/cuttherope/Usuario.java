@@ -14,9 +14,7 @@ import java.util.List;
  * @author river
  */
 public class Usuario implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private String nombreUsuario;
     private String contraseña; // Hash de la contraseña
     private String nombreCompleto;
@@ -28,7 +26,7 @@ public class Usuario implements Serializable {
     private Preferencias preferencias;
     private String rutaAvatar;
     private int puntuacionGeneral;
-    private List<String> amigos;
+    private List<Amigo> amigos; // Lista de objetos Amigo en vez de String
 
     public Usuario(String nombreUsuario, String contraseña, String nombreCompleto) {
         this.nombreUsuario = nombreUsuario;
@@ -42,7 +40,7 @@ public class Usuario implements Serializable {
         this.preferencias = new Preferencias();
         this.rutaAvatar = "perfil-imagen.jpg";
         this.puntuacionGeneral = 0;
-        this.amigos = new ArrayList<>();
+        this.amigos = new ArrayList<>(); // Inicializa lista de amigos
     }
 
     public String getNombreUsuario() {
@@ -117,24 +115,47 @@ public class Usuario implements Serializable {
         this.puntuacionGeneral += puntos;
     }
 
-    public List<String> getAmigos() {
+    // Métodos para acceder a la lista de amigos
+    public List<Amigo> getAmigos() {
         return amigos;
     }
 
-    public void agregarAmigo(String nombreAmigo) {
-        if (!amigos.contains(nombreAmigo)) {
-            amigos.add(nombreAmigo);
-        }
-    }
-
+    // No se incluyen métodos para gestionar amigos ya que ahora
+    // eso lo maneja la clase Control
     @Override
     public String toString() {
+        int amigosAceptados = 0;
+        for (Amigo amigo : amigos) {
+            if (amigo.isAceptado()) {
+                amigosAceptados++;
+            }
+        }
+
         return "Usuario: " + nombreUsuario
                 + "\nNombre completo: " + nombreCompleto
                 + "\nFecha de registro: " + new Date(fechaRegistro)
                 + "\nÚltima sesión: " + new Date(ultimaSesion)
                 + "\nNivel actual: " + progresoJuego.getNivelActual()
                 + "\nTiempo total jugado: " + (tiempoTotalJugado / 3600000) + " horas"
-                + "\nPuntuación general: " + puntuacionGeneral;
+                + "\nPuntuación general: " + puntuacionGeneral
+                + "\nNúmero de amigos: " + amigosAceptados;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Usuario usuario = (Usuario) obj;
+        return nombreUsuario != null && nombreUsuario.equals(usuario.nombreUsuario);
+    }
+
+    @Override
+    public int hashCode() {
+        return nombreUsuario != null ? nombreUsuario.hashCode() : 0;
     }
 }
