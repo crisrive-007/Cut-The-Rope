@@ -36,6 +36,7 @@ public class CrearCuenta extends ScreenAdapter {
 
     private Stage stage;
     private Texture background, logoTexture;
+    private Texture cyanBackgroundTexture;
     private Skin skin;
     private TextButton exitButton;
     private TextField nameField, usernameField, passwordField, confirmPasswordField;
@@ -53,11 +54,14 @@ public class CrearCuenta extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Cargar imagen de fondo
-        background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
-
-        // Cargar logo
-        logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
+        try {
+            background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
+        } catch (Exception e) {
+            Gdx.app.error("CrearCuenta", "Error al cargar texturas", e);
+            background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
+        }
 
         // Cargar la fuente con antialiasing y mayor escala
         BitmapFont font = new BitmapFont(Gdx.files.internal("fuente.fnt"), false);
@@ -81,7 +85,8 @@ public class CrearCuenta extends ScreenAdapter {
 
         // Crear un panel cyan usando un Table con fondo cyan
         cyanPanelTable = new Table();
-        Drawable cyanBackground = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("cyan_background.png"))));
+        cyanBackgroundTexture = new Texture(Gdx.files.internal("cyan_background.png"));
+        Drawable cyanBackground = new TextureRegionDrawable(new TextureRegion(cyanBackgroundTexture));
         cyanPanelTable.background(cyanBackground);
 
         // Establecer tamaño del panel cyan a 600x400 (más grande)
@@ -158,16 +163,18 @@ public class CrearCuenta extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        try {
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Dibujar el fondo primero
-        stage.getBatch().begin();
-        stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        stage.getBatch().end();
+            stage.getBatch().begin();
+            stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            stage.getBatch().end();
 
-        // Luego dibujar la interfaz
-        stage.act(delta);
-        stage.draw();
+            stage.act(delta);
+            stage.draw();
+        } catch (Exception e) {
+            Gdx.app.error("CrearCuenta", "Error en render", e);
+        }
     }
 
     @Override
@@ -176,6 +183,9 @@ public class CrearCuenta extends ScreenAdapter {
         background.dispose();
         logoTexture.dispose();
         skin.dispose();
+        if (cyanBackgroundTexture != null) {
+            cyanBackgroundTexture.dispose();
+        }
     }
 
     private void createAccount() throws IOException {
@@ -191,16 +201,17 @@ public class CrearCuenta extends ScreenAdapter {
             messageLabel.setText("Las contraseñas no coinciden.");
             messageLabel.setColor(Color.RED);
         } else {
-            // Crear un objeto Usuario con los datos ingresados
-            //Usuarios nuevoUsuario = new Usuarios(user, pass, name);
-            Usuario nuevoUsuario = new Usuario(user, pass, name);
-            //controlUsuarios.agregarUsuario(nuevoUsuario);
-            controlUsuarios.registrarUsuario(user, pass, name);
-
-            // Mostrar mensaje de éxito
-            messageLabel.setText("Cuenta creada exitosamente.");
-            messageLabel.setColor(Color.GREEN);
-            ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(nuevoUsuario));
+            try {
+                Usuario nuevoUsuario = new Usuario(user, pass, name);
+                controlUsuarios.registrarUsuario(user, pass, name);
+                messageLabel.setText("Cuenta creada exitosamente.");
+                messageLabel.setColor(Color.GREEN);
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(nuevoUsuario));
+            } catch (Exception e) {
+                Gdx.app.error("CrearCuenta", "Error al crear cuenta o cambiar pantalla", e);
+                messageLabel.setText("Error al crear cuenta. Intente de nuevo.");
+                messageLabel.setColor(Color.RED);
+            }
         }
     }
 }

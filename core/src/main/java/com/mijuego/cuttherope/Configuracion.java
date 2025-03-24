@@ -37,95 +37,108 @@ public class Configuracion extends ScreenAdapter {
         this.jugador = jugador;
         this.idioma = idioma;
         this.español = idioma.equals("es");
-        this.prefer = jugador.getPreferencias();
+        if (jugador != null && jugador.getPreferencias() != null) {
+            this.prefer = jugador.getPreferencias();
+        } else {
+            this.prefer = new Preferencias();
+        }
         this.muteado = prefer.getVolumen() == 0;
     }
 
     @Override
     public void show() {
-        stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
+        try {
+            stage = new Stage(new ScreenViewport());
+            Gdx.input.setInputProcessor(stage);
 
-        background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            try {
+                background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            } catch (Exception e) {
+                Gdx.app.error("Configuracion", "Error al cargar la textura de fondo", e);
+                background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            }
 
-        // Cargar el skin (asegúrate de tener el archivo uiskin.json en tu proyecto)
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
+            // Cargar el skin (asegúrate de tener el archivo uiskin.json en tu proyecto)
+            skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        // Crear los botones
-        cambiarIdiomaButton = new TextButton(getCambiarIdiomaText(), skin);
-        mutearMusicaButton = new TextButton(getMutearMusicaText(), skin);
-        exitButton = new TextButton(getExitText(), skin);
+            // Crear los botones
+            cambiarIdiomaButton = new TextButton(getCambiarIdiomaText(), skin);
+            mutearMusicaButton = new TextButton(getMutearMusicaText(), skin);
+            exitButton = new TextButton(getExitText(), skin);
 
-        // Establecer la lógica de los botones
-        cambiarIdiomaButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                // Cambiar el idioma
-                Preferencias preferencias = jugador.getPreferencias();
-                if (preferencias.getIdioma().equals("es")) {
-                    preferencias.setIdioma("en");
-                    español = false;
-                } else {
-                    preferencias.setIdioma("es");
-                    español = true;
+            // Establecer la lógica de los botones
+            cambiarIdiomaButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    // Cambiar el idioma
+                    Preferencias preferencias = jugador.getPreferencias();
+                    if (preferencias.getIdioma().equals("es")) {
+                        preferencias.setIdioma("en");
+                        español = false;
+                    } else {
+                        preferencias.setIdioma("es");
+                        español = true;
+                    }
+                    jugador.setPreferencias(preferencias);
+                    Control control = new Control();
+                    control.actualizarPreferencias(jugador.getNombreUsuario(), preferencias);
+
+                    // Actualizar el texto del botón
+                    cambiarIdiomaButton.setText(getCambiarIdiomaText());
+                    mutearMusicaButton.setText(getMutearMusicaText());
+                    exitButton.setText(getExitText());
                 }
-                jugador.setPreferencias(preferencias);
-                Control control = new Control();
-                control.actualizarPreferencias(jugador.getNombreUsuario(), preferencias);
+            });
 
-                // Actualizar el texto del botón
-                cambiarIdiomaButton.setText(getCambiarIdiomaText());
-                mutearMusicaButton.setText(getMutearMusicaText());
-                exitButton.setText(getExitText());
-            }
-        });
+            mutearMusicaButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    // Mutear o desmutear la música
+                    Preferencias preferencias = jugador.getPreferencias();
+                    if (preferencias.getVolumen() != 0) {
+                        preferencias.setVolumen(0);
+                        MusicManager musicManager = MusicManager.getInstance(jugador);
+                        musicManager.setVolume(0);
+                        muteado = true;
+                    } else {
+                        preferencias.setVolumen(0.5f);
+                        MusicManager musicManager = MusicManager.getInstance(jugador);
+                        musicManager.setVolume(0.5f);
+                        muteado = false;
+                    }
+                    jugador.setPreferencias(preferencias);
+                    Control control = new Control();
+                    control.actualizarPreferencias(jugador.getNombreUsuario(), preferencias);
 
-        mutearMusicaButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                // Mutear o desmutear la música
-                Preferencias preferencias = jugador.getPreferencias();
-                if (preferencias.getVolumen() != 0) {
-                    preferencias.setVolumen(0);
-                    MusicManager musicManager = MusicManager.getInstance(jugador);
-                    musicManager.setVolume(0);
-                    muteado = true;
-                } else {
-                    preferencias.setVolumen(0.5f);
-                    MusicManager musicManager = MusicManager.getInstance(jugador);
-                    musicManager.setVolume(0.5f);
-                    muteado = false;
+                    // Actualizar el texto del botón
+                    mutearMusicaButton.setText(getMutearMusicaText());
                 }
-                jugador.setPreferencias(preferencias);
-                Control control = new Control();
-                control.actualizarPreferencias(jugador.getNombreUsuario(), preferencias);
+            });
 
-                // Actualizar el texto del botón
-                mutearMusicaButton.setText(getMutearMusicaText());
-            }
-        });
+            // Crear una tabla para organizar los botones
+            Table table = new Table();
+            table.setFillParent(true);  // Asegura que la tabla ocupe toda la pantalla
 
-        // Crear una tabla para organizar los botones
-        Table table = new Table();
-        table.setFillParent(true);  // Asegura que la tabla ocupe toda la pantalla
+            // Agregar los botones a la tabla
+            table.add(cambiarIdiomaButton).width(300).height(60).padBottom(20).row();
+            table.add(mutearMusicaButton).width(300).height(60);
+            exitButton.setSize(80, 30);
+            exitButton.setPosition(10, 820);
 
-        // Agregar los botones a la tabla
-        table.add(cambiarIdiomaButton).width(300).height(60).padBottom(20).row();
-        table.add(mutearMusicaButton).width(300).height(60);
-        exitButton.setSize(80, 30);
-        exitButton.setPosition(10, 820);
-        
-        exitButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                // Salir de la aplicación
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(jugador));
-            }
-        });
+            exitButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    // Salir de la aplicación
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(jugador));
+                }
+            });
 
-        // Añadir la tabla al stage
-        stage.addActor(table);
-        stage.addActor(exitButton);
+            // Añadir la tabla al stage
+            stage.addActor(table);
+            stage.addActor(exitButton);
+        } catch (Exception e) {
+            Gdx.app.error("Configuracion", "Error al mostrar la pantalla de configuración", e);
+        }
     }
 
     @Override
@@ -148,10 +161,22 @@ public class Configuracion extends ScreenAdapter {
 
     @Override
     public void hide() {
-        stage.dispose();
+        dispose();
+    }
+    
+    @Override
+    public void dispose() {
+        if (stage != null) {
+            stage.dispose();
+        }
+        if (skin != null) {
+            skin.dispose();
+        }
+        if (background != null) {
+            background.dispose();
+        }
     }
 
-    // Métodos para obtener el texto de los botones
     private String getCambiarIdiomaText() {
         return español ? "Cambiar Idioma: Espanol" : "Change Language: English";
     }
@@ -159,7 +184,7 @@ public class Configuracion extends ScreenAdapter {
     private String getMutearMusicaText() {
         return español ? (!muteado ? "Musica: Activada" : "Musica: Desactivada") : (!muteado ? "Music: On" : "Music: Off");
     }
-    
+
     private String getExitText() {
         return español ? "Salir" : "Exit";
     }

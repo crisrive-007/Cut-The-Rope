@@ -36,6 +36,7 @@ public class LoginScreen extends ScreenAdapter {
 
     private Stage stage;
     private Texture background, logoTexture;
+    private Texture cyanBackgroundTexture;
     private Skin skin;
     private TextButton exitButton;
     private TextField usernameField, passwordField;
@@ -51,11 +52,14 @@ public class LoginScreen extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Cargar imagen de fondo
-        background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
-
-        // Cargar logo
-        logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png")); // Asegúrate de tener la imagen del logo en tu proyecto
+        try {
+            background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
+        } catch (Exception e) {
+            Gdx.app.error("LoginScreen", "Error cargando texturas: " + e.getMessage(), e);
+            background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
+            logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
+        }
 
         // Cargar la fuente con antialiasing y mayor escala
         BitmapFont font = new BitmapFont(Gdx.files.internal("fuente.fnt"), false);
@@ -78,9 +82,13 @@ public class LoginScreen extends ScreenAdapter {
         // Crear un panel cyan usando un Table con fondo cyan
         cyanPanelTable = new Table();
 
-        // Usar un color sólido para el fondo cyan
-        Drawable cyanBackground = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("cyan_background.png"))));
-        cyanPanelTable.background(cyanBackground);  // Establecer el fondo cyan con una textura
+        try {
+            cyanBackgroundTexture = new Texture(Gdx.files.internal("cyan_background.png"));
+            Drawable cyanBackground = new TextureRegionDrawable(new TextureRegion(cyanBackgroundTexture));
+            cyanPanelTable.background(cyanBackground);
+        } catch (Exception e) {
+            Gdx.app.error("LoginScreen", "Error al cargar fondo cyan", e);
+        }
 
         // Establecer tamaño del panel cyan a 600x400 (más grande)
         cyanPanelTable.setSize(600, 400);
@@ -147,43 +155,63 @@ public class LoginScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        try {
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Dibujar el fondo primero
-        stage.getBatch().begin();
-        stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        stage.getBatch().end();
+            stage.getBatch().begin();
+            stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            stage.getBatch().end();
 
-        // Luego dibujar la interfaz
-        stage.act(delta);
-        stage.draw();
+            stage.act(delta);
+            stage.draw();
+        } catch (Exception e) {
+            Gdx.app.error("LoginScreen", "Error en render", e);
+        }
     }
 
     @Override
     public void dispose() {
-        stage.dispose();
-        background.dispose();
-        logoTexture.dispose(); // Asegúrate de liberar la memoria del logo
-        skin.dispose();
+        if (stage != null) {
+            stage.dispose();
+        }
+        if (background != null) {
+            background.dispose();
+        }
+        if (logoTexture != null) {
+            logoTexture.dispose();
+        }
+        if (skin != null) {
+            skin.dispose();
+        }
+        if (cyanBackgroundTexture != null) {
+            cyanBackgroundTexture.dispose();
+        }
     }
 
     private void validateLogin() throws IOException {
-        String user = usernameField.getText();
-        String pass = passwordField.getText();
+        try {
+            String user = usernameField.getText();
+            String pass = passwordField.getText();
 
-        //ControlUsuarios controlUsuarios = new ControlUsuarios("usuarios.dat");
-        Control control = new Control();
+            Control control = new Control();
 
-        //Usuarios usuario = controlUsuarios.buscarUsuario(user);  // Buscar al usuario por nombre
-
-        if (control.iniciarSesion(user, pass)) { // Verificar contraseña
-            Usuario usuario = control.obtenerUsuario(user);
-            messageLabel.setText("¡Inicio de sesión exitoso!");
-            messageLabel.setColor(Color.GREEN);
-
-            ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(usuario));
-        } else {
-            messageLabel.setText("Usuario o contraseña incorrectos.");
+            if (control.iniciarSesion(user, pass)) {
+                Usuario usuario = control.obtenerUsuario(user);
+                if (usuario != null) {
+                    messageLabel.setText("¡Inicio de sesión exitoso!");
+                    messageLabel.setColor(Color.GREEN);
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(usuario));
+                } else {
+                    messageLabel.setText("Error al obtener datos del usuario.");
+                    messageLabel.setColor(Color.RED);
+                }
+            } else {
+                messageLabel.setText("Usuario o contraseña incorrectos.");
+                messageLabel.setColor(Color.RED);
+            }
+        } catch (Exception e) {
+            Gdx.app.error("LoginScreen", "Error en validateLogin", e);
+            messageLabel.setText("Error en el sistema. Intente de nuevo.");
             messageLabel.setColor(Color.RED);
         }
     }

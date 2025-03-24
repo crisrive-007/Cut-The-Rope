@@ -12,12 +12,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
@@ -37,9 +39,13 @@ public class Amigos extends ScreenAdapter {
     private Texture background;
     private Array<String> friends;
     private Usuario usuario;
+    private String idioma;
+    private boolean español;
 
-    public Amigos(Usuario usuario) {
+    public Amigos(Usuario usuario, String idioma) {
         this.usuario = usuario;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
         friends = new Array<>();
 
         for (Amigo amigo : usuario.getAmigos()) {
@@ -57,14 +63,16 @@ public class Amigos extends ScreenAdapter {
         background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        
-        exitButton = new TextButton("Salir", skin);
+        String salir = español ? "Salir" : "Exit";
+        exitButton = new TextButton(salir, skin);
 
         Table mainTable = new Table(skin);
         mainTable.setFillParent(true);
         stage.addActor(mainTable);
+        
+        String listaAmigos = español ? "Lista de Amigos" : "Friends List";
 
-        mainTable.add(new Label("Lista de Amigos", skin)).colspan(2).pad(10).row();
+        mainTable.add(new Label(listaAmigos, skin)).colspan(2).pad(10).row();
 
         friendsList = new List<>(skin);
         friendsList.setItems(friends); // Aquí muestra la lista de amigos que llenaste en el constructor
@@ -74,10 +82,14 @@ public class Amigos extends ScreenAdapter {
         scrollPane.setForceScroll(false, true);
 
         mainTable.add(scrollPane).width(300).height(400).colspan(2).pad(10).row();
+        
+        String agregar = español ? "Agregar Amigo" : "Add Friend";
+        String eliminar = español ? "Eliminar Amigo" : "Delete Friend";
+        String solicitudes = español ? "Ver Solicitudes Pendientes" : "View Pending Requests";
 
-        TextButton addButton = new TextButton("Agregar Amigo", skin);
-        TextButton removeButton = new TextButton("Eliminar Amigo", skin);
-        TextButton viewRequestsButton = new TextButton("Ver Solicitudes Pendientes", skin); // Nuevo botón para solicitudes
+        TextButton addButton = new TextButton(agregar, skin);
+        TextButton removeButton = new TextButton(eliminar, skin);
+        TextButton viewRequestsButton = new TextButton(solicitudes, skin); // Nuevo botón para solicitudes
 
         mainTable.add(addButton).pad(10).width(150);
         mainTable.add(removeButton).pad(10).width(150).row();
@@ -87,7 +99,7 @@ public class Amigos extends ScreenAdapter {
         viewRequestsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                new SolicitudesPendientes(usuario, Amigos.this).setVisible(true);
+                new SolicitudesPendientes(usuario, Amigos.this, idioma).setVisible(true);
             }
         });
 
@@ -95,12 +107,38 @@ public class Amigos extends ScreenAdapter {
         addButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                String amigo = JOptionPane.showInputDialog("Ingrese el nombre del usuario:");
-                if (amigo != null) {
-                    Control control = new Control();
-                    control.agregarAmigo(usuario.getNombreUsuario(), amigo);
-                }
-                actualizarListaAmigos();
+                String agregar = español ? "Agregar Amigo" : "Add Friend";
+                Dialog dialog = new Dialog(agregar, skin);
+                final TextField textField = new TextField("", skin);
+                String ingresar = español ? "Ingrese el nombre del usuario:" : "Enter the username:";
+                dialog.getContentTable().add(new Label(ingresar, skin)).row();
+                dialog.getContentTable().add(textField).width(300).row();
+                String aceptar = español ? "Aceptar" : "Accept";
+                TextButton acceptButton = new TextButton(aceptar, skin);
+                acceptButton.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        String amigo = textField.getText();
+                        if (amigo != null && !amigo.isEmpty()) {
+                            Control control = new Control();
+                            control.agregarAmigo(usuario.getNombreUsuario(), amigo, idioma);
+                            actualizarListaAmigos();
+                        }
+                        dialog.hide();
+                    }
+                });
+                String cancelar = español ? "Cancelar" : "Cancel";
+                TextButton cancelButton = new TextButton(cancelar, skin);
+                cancelButton.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        dialog.hide();
+                    }
+                });
+                dialog.getButtonTable().add(acceptButton).pad(10);
+                dialog.getButtonTable().add(cancelButton).pad(10);
+
+                dialog.show(stage);
             }
         });
 
@@ -108,13 +146,38 @@ public class Amigos extends ScreenAdapter {
         removeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                String amigo = JOptionPane.showInputDialog("Ingrese el nombre del usuario:");
-                if (amigo != null) {
-                    Control control = new Control();
-                    if(control.eliminarAmigo(usuario.getNombreUsuario(), amigo)) {
-                        actualizarListaAmigos();
+                String agregar = español ? "Agregar Amigo" : "Add Friend";
+                Dialog dialog = new Dialog(agregar, skin);
+                final TextField textField = new TextField("", skin);
+                String ingresar = español ? "Ingrese el nombre del usuario:" : "Enter the username:";
+                dialog.getContentTable().add(new Label(ingresar, skin)).row();
+                dialog.getContentTable().add(textField).width(300).row();
+                String aceptar = español ? "Aceptar" : "Accept";
+                TextButton acceptButton = new TextButton(aceptar, skin);
+                acceptButton.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        String amigo = textField.getText();
+                        if (amigo != null && !amigo.isEmpty()) {
+                            Control control = new Control();
+                            control.eliminarAmigo(usuario.getNombreUsuario(), amigo, idioma);
+                            actualizarListaAmigos();
+                        }
+                        dialog.hide();
                     }
-                }
+                });
+                String cancelar = español ? "Cancelar" : "Cancel";
+                TextButton cancelButton = new TextButton(cancelar, skin);
+                cancelButton.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        dialog.hide();
+                    }
+                });
+                dialog.getButtonTable().add(acceptButton).pad(10);
+                dialog.getButtonTable().add(cancelButton).pad(10);
+
+                dialog.show(stage);
             }
         });
         
@@ -122,7 +185,7 @@ public class Amigos extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Salir de la aplicación
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MiPerfil(usuario, "es"));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MiPerfil(usuario, idioma));
             }
         });
 
@@ -132,24 +195,33 @@ public class Amigos extends ScreenAdapter {
     }
     
     public void actualizarListaAmigos() {
-        friends.clear(); // Limpiar la lista de amigos actual
-        for (Amigo amigo : usuario.getAmigos()) {
-            if (amigo.isAceptado()) {
-                friends.add(amigo.getAmigo().getNombreUsuario()); // Agregar el nombre del amigo
+        friends.clear();
+        if (usuario.getAmigos() != null) {
+            for (Amigo amigo : usuario.getAmigos()) {
+                if (amigo != null && amigo.isAceptado() && amigo.getAmigo() != null) {
+                    String nombreUsuario = amigo.getAmigo().getNombreUsuario();
+                    if (nombreUsuario != null) {
+                        friends.add(nombreUsuario);
+                    }
+                }
             }
         }
-        friendsList.setItems(friends); // Actualizar la lista visible
+        friendsList.setItems(friends);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.getBatch().begin();
-        stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        stage.getBatch().end();
-        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-        stage.draw();
+        try {
+            Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            stage.getBatch().begin();
+            stage.getBatch().draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            stage.getBatch().end();
+            stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+            stage.draw();
+        } catch (Exception e) {
+            Gdx.app.error("Amigos", "Error en render: " + e.getMessage(), e);
+        }
     }
 
     @Override

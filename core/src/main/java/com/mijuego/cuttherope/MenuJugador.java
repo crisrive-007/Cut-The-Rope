@@ -125,8 +125,8 @@ public class MenuJugador extends ScreenAdapter {
         table.add(playButton).width(300).height(60).padBottom(20).row();
         table.add(profileButton).width(300).height(60).padBottom(20).row();
         table.add(configButton).width(300).height(60).padBottom(20).row();
-        table.add(csesionButton).width(300).height(60).padBottom(20).row();
-        table.add(rankingButton).width(300).height(60);
+        table.add(rankingButton).width(300).height(60).padBottom(20).row();
+        table.add(csesionButton).width(300).height(60);
 
         // Añadir la tabla al stage
         stage.addActor(table);

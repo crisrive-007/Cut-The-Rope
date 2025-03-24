@@ -147,7 +147,7 @@ public class Nivel1 implements Screen {
         cuerda = new Cuerda(world, dulce, gancho.getBody().getPosition(), longitudCuerda, 0.25f, 5);
 
         // Configurar el detector de colisiones
-        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana);
+        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana, jugador, idioma);
         collisionDetector.start();
         world.setContactListener(collisionDetector);
 
@@ -201,41 +201,7 @@ public class Nivel1 implements Screen {
             starCollected[starIndex] = true;
         }
     }
-
-    private boolean dulceTocoOmNom(Fixture fixtureA, Fixture fixtureB) {
-        Body bodyA = fixtureA.getBody();
-        Body bodyB = fixtureB.getBody();
-
-        if (dulce != null && dulce.getBody() != null && bodyA == dulce.getBody() && bodyB == omNom.getBody()) {
-            return true;
-        } else if (dulce != null && dulce.getBody() != null && bodyB == dulce.getBody() && bodyA == omNom.getBody()) {
-            return true;
-        }
-        return false;
-    }
-
-    private void omNomComio(Body ranaBody) {
-        if (!collidedRana.contains(ranaBody)) {
-            System.out.println("¡La rana se comió el dulce!");
-            if (dulce != null && dulce.getBody() != null) {
-                bodiesToRemove.add(dulce.getBody()); // Agregar el cuerpo para ser destruido
-            }
-            collidedRana.add(ranaBody);
-            if (dulce != null) {
-                dulce.dispose();
-                dulce = null;
-            }
-
-            omNom.setEatingTexture();
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    omNom.setNormalTexture();
-                }
-            }, 0.09f);
-        }
-    }
-
+    
     @Override
     public void render(float delta) {
         // Limpiar la pantalla
@@ -271,7 +237,7 @@ public class Nivel1 implements Screen {
 
             for (int i = 0; i < starRectangles.length; i++) {
                 if (!starCollected[i] && dulceRect.overlaps(starRectangles[i])) {
-                    dulceTocoEstrella(i);
+                    collisionDetector.dulceTocoEstrella(i);
                 }
             }
         }

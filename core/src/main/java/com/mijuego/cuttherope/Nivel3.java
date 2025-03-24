@@ -131,7 +131,7 @@ public class Nivel3 implements Screen {
         // ⭐ Inicializar estrellas
         starCollected = new boolean[starTextures.length];
 
-        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana);
+        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana, jugador, idioma);
         collisionDetector.start();
         world.setContactListener(collisionDetector);
 
@@ -184,24 +184,6 @@ public class Nivel3 implements Screen {
         ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador, idioma));
     }
 
-    private void dulceTocoEstrella(int starIndex) {
-        float dx = dulce.getBody().getPosition().x - starPositions[starIndex].x;
-        float dy = dulce.getBody().getPosition().y - starPositions[starIndex].y;
-        float distancia = (float) Math.sqrt(dx * dx + dy * dy);
-
-        System.out.println("Distancia entre dulce y estrella " + starIndex + ": " + distancia);
-
-        float radioColision = 1.0f; // Ajusta según el tamaño del dulce y la estrella
-
-        if (distancia < radioColision && !collidedStars.contains(starIndex)) {
-            puntos += 1;
-            System.out.println("¡Colisión con estrella! Puntos: " + puntos);
-            collidedStars.add(starIndex);
-            starCollected[starIndex] = true;
-            System.out.println("Se recogió la estrella " + starIndex + " -> " + starCollected[starIndex]);
-        }
-    }
-
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
@@ -224,7 +206,7 @@ public class Nivel3 implements Screen {
             Rectangle ballRect = new Rectangle(dulce.getBody().getPosition().x - 0.5f, dulce.getBody().getPosition().y - 0.5f, 1, 1);
             for (int i = 0; i < starRectangles.length; i++) {
                 if (!starCollected[i] && ballRect.overlaps(starRectangles[i])) {
-                    dulceTocoEstrella(i);
+                    collisionDetector.dulceTocoEstrella(i);
                 }
             }
         }

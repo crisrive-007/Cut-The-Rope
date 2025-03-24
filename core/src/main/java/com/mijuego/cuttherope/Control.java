@@ -70,7 +70,7 @@ public class Control {
 
     public boolean registrarUsuario(String nombreUsuario, String contraseña, String nombreCompleto) {
         if (usuarios.containsKey(nombreUsuario)) {
-            System.out.println("El nombre de usuario ya existe.");
+            JOptionPane.showMessageDialog(null, "El nombre de usuario ya existe.");
             return false;
         }
 
@@ -87,7 +87,7 @@ public class Control {
             guardarUsuarios();
             guardarUsuarioIndividual(nuevoUsuario);
 
-            System.out.println("Usuario " + nombreUsuario + " registrado exitosamente.");
+            JOptionPane.showMessageDialog(null, "Usuario " + nombreUsuario + " registrado exitosamente.");
             return true;
         } catch (Exception e) {
             System.err.println("Error al registrar usuario: " + e.getMessage());
@@ -115,10 +115,15 @@ public class Control {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoPreferencias))) {
             oos.writeObject(usuario.getPreferencias());
         }
-        
+
         File archivoAmigos = new File(dirUsuario + "/amigos.ser");
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoAmigos))) {
             oos.writeObject(usuario.getAmigos());
+        }
+        
+        File archivoProgreso = new File(dirUsuario + "/progreso.ser");
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoProgreso))) {
+            oos.writeObject(usuario.getProgresoJuego());
         }
     }
 
@@ -141,7 +146,7 @@ public class Control {
     public boolean iniciarSesion(String nombreUsuario, String contraseña) {
         Usuario usuario = usuarios.get(nombreUsuario);
         if (usuario == null) {
-            System.out.println("Usuario no encontrado.");
+            JOptionPane.showMessageDialog(null, "Usuario no encontrado.");
             return false;
         }
 
@@ -152,10 +157,10 @@ public class Control {
                 usuario.setUltimaSesion(System.currentTimeMillis());
                 guardarUsuarios();
                 guardarUsuarioIndividual(usuario);
-                System.out.println("Inicio de sesión exitoso para " + nombreUsuario);
+                JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso para " + nombreUsuario);
                 return true;
             } else {
-                System.out.println("Contraseña incorrecta.");
+                JOptionPane.showMessageDialog(null, "Contraseña incorrecta.");
                 return false;
             }
         } catch (Exception e) {
@@ -243,7 +248,7 @@ public class Control {
         }
     }
 
-    public boolean agregarAmigo(String nombreUsuario, String nombreAmigo) {
+    public boolean agregarAmigo(String nombreUsuario, String nombreAmigo, String idioma) {
         Usuario usuario = usuarios.get(nombreUsuario);
         Usuario amigo = usuarios.get(nombreAmigo);
 
@@ -252,7 +257,7 @@ public class Control {
         }
 
         try {
-            enviarSolicitudAmistad(nombreUsuario, nombreAmigo);
+            enviarSolicitudAmistad(nombreUsuario, nombreAmigo, idioma);
             guardarUsuarios();
             guardarUsuarioIndividual(usuario);
             return true;
@@ -473,24 +478,40 @@ public class Control {
             return null;
         }
     }
-    public boolean enviarSolicitudAmistad(String nombreUsuarioSolicitante, String nombreUsuarioDestino) {
+
+    public boolean enviarSolicitudAmistad(String nombreUsuarioSolicitante, String nombreUsuarioDestino, String idioma) {
         Usuario solicitante = usuarios.get(nombreUsuarioSolicitante);
         Usuario destinatario = usuarios.get(nombreUsuarioDestino);
 
+        boolean español = idioma.equals("es");
+        String texto1 = null;
+        String texto2 = null;
+        String texto3 = null;
+
+        if (español) {
+            texto1 = "Este usuario no existe.";
+            texto2 = "Este usuario ya es tu amigo.";
+            texto3 = "No puedes agregarte a ti mismo.";
+        } else {
+            texto1 = "This user does not exist.";
+            texto2 = "This user is already your friend.";
+            texto3 = "You cannot add yourself.";
+        }
+
         if (solicitante == null || destinatario == null) {
-            JOptionPane.showMessageDialog(null, "Este usuario no existe.");
+            JOptionPane.showMessageDialog(null, texto1);
             return false;
         }
 
         for (Amigo amigo : solicitante.getAmigos()) {
             if (amigo.getAmigo().getNombreUsuario().equals(nombreUsuarioDestino) && amigo.isAceptado()) {
-                JOptionPane.showMessageDialog(null, "Este usuario ya es tu amigo.");
+                JOptionPane.showMessageDialog(null, texto2);
                 return false;
             }
         }
-        
+
         if (solicitante == destinatario) {
-            JOptionPane.showMessageDialog(null, "No puedes agregarte a ti mismo.");
+            JOptionPane.showMessageDialog(null, texto3);
             return false;
         }
 
@@ -506,12 +527,30 @@ public class Control {
     }
 
 // Método para aceptar una solicitud de amistad pendiente
-    public boolean aceptarSolicitudAmistad(String nombreUsuarioAceptante, String nombreUsuarioSolicitante) {
+    public boolean aceptarSolicitudAmistad(String nombreUsuarioAceptante, String nombreUsuarioSolicitante, String idioma) {
         Usuario aceptante = usuarios.get(nombreUsuarioAceptante);
         Usuario solicitante = usuarios.get(nombreUsuarioSolicitante);
 
+        boolean español = idioma.equals("es");
+        String texto1 = null;
+        String texto2 = null;
+        String texto3 = null;
+        String texto4 = null;
+
+        if (español) {
+            texto1 = "Este usuario no existe.";
+            texto2 = "No hay solicitud pendiente de ";
+            texto3 = "Solicitud de amistad aceptada entre ";
+            texto4 = " y ";
+        } else {
+            texto1 = "This user does not exist.";
+            texto2 = "There is no pending request for ";
+            texto3 = "Friend request accepted between ";
+            texto4 = " and ";
+        }
+
         if (aceptante == null || solicitante == null) {
-            JOptionPane.showMessageDialog(null, "Este usuario no existe.");
+            JOptionPane.showMessageDialog(null, texto1);
             return false;
         }
 
@@ -526,7 +565,7 @@ public class Control {
         }
 
         if (!solicitudEncontrada) {
-            System.out.println("No hay solicitud pendiente de " + nombreUsuarioSolicitante);
+            JOptionPane.showMessageDialog(null, texto2 + nombreUsuarioSolicitante);
             return false;
         }
 
@@ -552,8 +591,7 @@ public class Control {
             guardarUsuarioIndividual(aceptante);
             guardarUsuarioIndividual(solicitante);
 
-            System.out.println("Solicitud de amistad aceptada entre "
-                    + nombreUsuarioAceptante + " y " + nombreUsuarioSolicitante);
+            JOptionPane.showMessageDialog(null, texto3 + nombreUsuarioAceptante + texto4 + nombreUsuarioSolicitante);
             return true;
         } catch (Exception e) {
             System.err.println("Error al aceptar solicitud de amistad: " + e.getMessage());
@@ -563,11 +601,26 @@ public class Control {
     }
 
 // Método para rechazar una solicitud de amistad
-    public boolean rechazarSolicitudAmistad(String nombreUsuarioRechazante, String nombreUsuarioSolicitante) {
+    public boolean rechazarSolicitudAmistad(String nombreUsuarioRechazante, String nombreUsuarioSolicitante, String idioma) {
         Usuario rechazante = usuarios.get(nombreUsuarioRechazante);
 
+        boolean español = idioma.equals("es");
+        String texto1 = null;
+        String texto2 = null;
+        String texto3 = null;
+
+        if (español) {
+            texto1 = "Usuario no encontrado.";
+            texto2 = "No hay solicitud pendiente de ";
+            texto3 = "Solicitud de amistad rechazada de ";
+        } else {
+            texto1 = "User not found.";
+            texto2 = "There is no pending request for ";
+            texto3 = "Friend request rejected from ";
+        }
+
         if (rechazante == null) {
-            System.out.println("Usuario no encontrado.");
+            JOptionPane.showMessageDialog(null, texto1);
             return false;
         }
 
@@ -583,7 +636,7 @@ public class Control {
         }
 
         if (!solicitudEliminada) {
-            System.out.println("No hay solicitud pendiente de " + nombreUsuarioSolicitante);
+            JOptionPane.showMessageDialog(null, texto2 + nombreUsuarioSolicitante);
             return false;
         }
 
@@ -592,7 +645,7 @@ public class Control {
             guardarUsuarios();
             guardarUsuarioIndividual(rechazante);
 
-            System.out.println("Solicitud de amistad rechazada de " + nombreUsuarioSolicitante);
+            JOptionPane.showMessageDialog(null, texto3 + nombreUsuarioSolicitante);
             return true;
         } catch (Exception e) {
             System.err.println("Error al rechazar solicitud de amistad: " + e.getMessage());
@@ -602,12 +655,27 @@ public class Control {
     }
 
 // Método para eliminar un amigo
-    public boolean eliminarAmigo(String nombreUsuario, String nombreAmigo) {
+    public boolean eliminarAmigo(String nombreUsuario, String nombreAmigo, String idioma) {
         Usuario usuario = usuarios.get(nombreUsuario);
         Usuario amigo = usuarios.get(nombreAmigo);
 
+        boolean español = idioma.equals("es");
+        String texto1 = null;
+        String texto2 = null;
+        String texto3 = null;
+
+        if (español) {
+            texto1 = "Este usuario no existe.";
+            texto2 = " no es amigo de ";
+            texto3 = " ya no es tu amigo.";
+        } else {
+            texto1 = "This user does not exist.";
+            texto2 = " its not a friend of ";
+            texto3 = " is no longer your friend.";
+        }
+
         if (usuario == null || amigo == null) {
-            JOptionPane.showMessageDialog(null, "Este usuario no existe");
+            JOptionPane.showMessageDialog(null, texto1);
             return false;
         }
 
@@ -630,7 +698,7 @@ public class Control {
         }
 
         if (!amigoEliminado) {
-            JOptionPane.showMessageDialog(null, nombreAmigo + " no es amigo de " + nombreUsuario);
+            JOptionPane.showMessageDialog(null, nombreAmigo + texto2 + nombreUsuario);
             return false;
         }
 
@@ -639,8 +707,8 @@ public class Control {
             guardarUsuarios();
             guardarUsuarioIndividual(usuario);
             guardarUsuarioIndividual(amigo);
-            
-            JOptionPane.showMessageDialog(null, nombreAmigo + " ya no es tu amigo.");
+
+            JOptionPane.showMessageDialog(null, nombreAmigo + texto3);
             return true;
         } catch (Exception e) {
             System.err.println("Error al eliminar amigo: " + e.getMessage());
@@ -698,5 +766,112 @@ public class Control {
 
         return false;
     }
+
+    public boolean sumarPuntos(String nombreUsuario, int puntos) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(null, "Usuario no encontrado.");
+            return false;
+        }
+
+        try {
+            // Obtenemos la puntuación actual y sumamos los nuevos puntos
+            int puntuacionActual = usuario.getPuntuacionGeneral();
+            int nuevaPuntuacion = puntuacionActual + puntos;
+
+            // Actualizamos la puntuación del usuario
+            usuario.actualizarPuntaje(nuevaPuntuacion);
+
+            // Guardamos los cambios
+            guardarUsuarios();
+            guardarUsuarioIndividual(usuario);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al sumar puntos: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int obtenerPuntos(String nombreUsuario) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(null, "Usuario no encontrado.");
+            return -1;
+        }
+        return usuario.getPuntuacionGeneral();
+    }
     
+    public boolean actualizarProgresoNivel(String nombreUsuario, int nivel, int puntaje, int estrellas) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            return false;
+        }
+
+        ProgresoJuego progreso = usuario.getProgresoJuego();
+
+        // Actualizar el progreso
+        progreso.actualizarPuntajeNivel(nivel, puntaje);
+        progreso.completarNivel(nivel);
+        progreso.agregarEstrellas(estrellas);
+
+        // Si se completó este nivel, desbloquear el siguiente
+        if (nivel >= progreso.getNivelActual()) {
+            progreso.setNivelActual(nivel + 1);
+        }
+
+        // Guardar los cambios
+        return guardarProgresoJuego(nombreUsuario);
+    }
+
+    public boolean guardarProgresoJuego(String nombreUsuario) {
+        try {
+            // Verificar que el usuario existe
+            Usuario usuario = usuarios.get(nombreUsuario);
+            if (usuario == null) {
+                System.err.println("Error: Usuario " + nombreUsuario + " no encontrado.");
+                return false;
+            }
+
+            // Obtener la ruta del directorio del usuario
+            String dirUsuario = DIRECTORIO_BASE + "/usuario_" + nombreUsuario;
+            File dirUsuarioFile = new File(dirUsuario);
+
+            // Verificar si el directorio existe, si no, crearlo
+            if (!dirUsuarioFile.exists()) {
+                if (!dirUsuarioFile.mkdirs()) {
+                    System.err.println("Error: No se pudo crear el directorio para el usuario.");
+                    return false;
+                }
+            }
+
+            // Guardar el progreso del juego
+            File archivoProgreso = new File(dirUsuario + "/progreso.ser");
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoProgreso))) {
+                ProgresoJuego progreso = usuario.getProgresoJuego();
+                oos.writeObject(progreso);
+                System.out.println("Progreso del juego guardado exitosamente para " + nombreUsuario);
+
+                // También actualizar el usuario en el mapa general
+                guardarUsuarios();
+                guardarUsuarioIndividual(usuario);
+
+                return true;
+            }
+        } catch (IOException e) {
+            System.err.println("Error al guardar el progreso del juego: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int obtenerNivelActual(String nombreUsuario) {
+        Usuario usuario = usuarios.get(nombreUsuario);
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(null, "Usuario no encontrado.");
+            return -1;
+        }
+
+        return usuario.getProgresoJuego().getNivelActual();
+    }
 }

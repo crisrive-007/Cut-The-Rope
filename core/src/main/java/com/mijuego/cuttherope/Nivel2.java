@@ -140,7 +140,7 @@ public class Nivel2 implements Screen {
         cuerda2 = new Cuerda(world, dulce, gancho2.getBody().getPosition(), 8f, 0.25f, 7); // Cuerda de longitud media, grosor medio, elasticidad normal
         cuerda3 = new Cuerda(world, dulce, gancho3.getBody().getPosition(), 6f, 0.25f, 7);
 
-        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana);
+        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana, jugador, idioma);
         collisionDetector.start();
 
         world.setContactListener(collisionDetector);
@@ -200,40 +200,6 @@ public class Nivel2 implements Screen {
         }
     }
 
-    private boolean dulceTocoOmNom(Fixture fixtureA, Fixture fixtureB) {
-        Body bodyA = fixtureA.getBody();
-        Body bodyB = fixtureB.getBody();
-
-        if (dulce != null && dulce.getBody() != null && bodyA == dulce.getBody() && bodyB == omNom.getBody()) {
-            return true;
-        } else if (dulce != null && dulce.getBody() != null && bodyB == dulce.getBody() && bodyA == omNom.getBody()) {
-            return true;
-        }
-        return false;
-    }
-
-    private void omNomComio(Body ranaBody) {
-        if (!collidedRana.contains(ranaBody)) {
-            System.out.println("¡La rana se comió el dulce!");
-            if (dulce != null && dulce.getBody() != null) {
-                bodiesToRemove.add(dulce.getBody()); // Agregar el cuerpo para ser destruido
-            }
-            collidedRana.add(ranaBody);
-            if (dulce != null) {
-                dulce.dispose();
-                dulce = null;
-            }
-
-            omNom.setEatingTexture();
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    omNom.setNormalTexture();
-                }
-            }, 0.09f);
-        }
-    }
-
     @Override
     public void render(float delta) {
         // Limpiar la pantalla
@@ -265,7 +231,7 @@ public class Nivel2 implements Screen {
             Rectangle ballRect = new Rectangle(dulce.getBody().getPosition().x - 0.5f, dulce.getBody().getPosition().y - 0.5f, 1, 1); // Rectángulo del dulce
             for (int i = 0; i < starRectangles.length; i++) {
                 if (!starCollected[i] && ballRect.overlaps(starRectangles[i])) { // Verificar si la estrella no ha sido recolectada y hay colisión
-                    dulceTocoEstrella(i);
+                    collisionDetector.dulceTocoEstrella(i);
                 }
             }
         }
@@ -313,30 +279,7 @@ public class Nivel2 implements Screen {
     public boolean tocarCuerda(float touchX, float touchY, Cuerda cuerda) {
         return false;
     }
-
-// Método auxiliar para calcular la distancia entre un punto y un segmento de línea (cuerda)
-    private float distanciaPuntoACuerda(float px, float py, float x1, float y1, float x2, float y2) {
-        // Calculamos el segmento de la cuerda
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-
-        // Si el segmento es un punto (x1 == x2 y y1 == y2), la distancia es la distancia entre el punto y el punto
-        if (dx == 0 && dy == 0) {
-            return (float) Math.sqrt(Math.pow(px - x1, 2) + Math.pow(py - y1, 2));
-        }
-
-        // Calculamos la proyección del punto (px, py) sobre el segmento de la cuerda
-        float t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
-        t = Math.max(0, Math.min(1, t));  // Limitar t para que esté entre 0 y 1
-
-        // Encontramos las coordenadas del punto más cercano sobre el segmento
-        float closestX = x1 + t * dx;
-        float closestY = y1 + t * dy;
-
-        // Calculamos la distancia entre el punto (px, py) y el punto más cercano
-        return (float) Math.sqrt(Math.pow(px - closestX, 2) + Math.pow(py - closestY, 2));
-    }
-
+    
     @Override
     public void resize(int width, int height) {
         camera.viewportWidth = width / PIXELS_TO_METER;

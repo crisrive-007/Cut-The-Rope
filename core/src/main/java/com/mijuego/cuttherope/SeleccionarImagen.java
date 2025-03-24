@@ -24,28 +24,34 @@ public class SeleccionarImagen extends JFrame {
     private File selectedFile;
     //private Usuarios jugador;
     private Usuario jugador;
+    private String idioma;
+    private boolean español;
 
-    public SeleccionarImagen(Usuario jugador) {
+    public SeleccionarImagen(Usuario jugador, String idioma) {
         super("Selector de Imágenes");
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
+        String titulo = español ? "Selector de Imágenes" : "Image Selector";
         this.jugador = jugador;
+        setTitle(titulo);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(600, 500);
         setLocationRelativeTo(null);
 
-        // Crear componentes
-        previewLabel = new JLabel("Vista previa de la imagen", JLabel.CENTER);
+        String vista = español ? "Vista previa de la imagen" : "Image preview";
+        previewLabel = new JLabel(vista, JLabel.CENTER);
         previewLabel.setPreferredSize(new Dimension(500, 300));
         previewLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-
-        selectButton = new JButton("Seleccionar Imagen");
+        String seleccionar = español ? "Seleccionar Imagen" : "Select Image";
+        selectButton = new JButton(seleccionar);
         selectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 seleccionarImagen();
             }
         });
-
-        saveButton = new JButton("Guardar Imagen");
+        String guardar = español ? "Guardar Imagen" : "Save Image";
+        saveButton = new JButton(guardar);
         saveButton.setEnabled(false); // Desactivado hasta que se seleccione una imagen
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -61,9 +67,9 @@ public class SeleccionarImagen extends JFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
+        String direccion = español ? "Dirección: " : "Address: ";
         JPanel pathPanel = new JPanel(new BorderLayout(5, 0));
-        pathPanel.add(new JLabel("Dirección: "), BorderLayout.WEST);
+        pathPanel.add(new JLabel(direccion), BorderLayout.WEST);
         pathPanel.add(pathTextField, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0));
@@ -96,7 +102,6 @@ public class SeleccionarImagen extends JFrame {
             mostrarImagen(selectedFile);
             pathTextField.setText(selectedFile.getAbsolutePath());
             saveButton.setEnabled(true);
-            System.out.println("Imagen seleccionada: " + selectedFile.getAbsolutePath());
         }
     }
 
@@ -136,17 +141,6 @@ public class SeleccionarImagen extends JFrame {
         }
     }
 
-    private void guardarImagen() {
-        if (selectedFile == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Primero debes seleccionar una imagen",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        //jugador.setAvatar(avatar);
-    }
-    
     private void guardarImagen(String imagePath) {
         if (selectedFile == null || imagePath.isEmpty()) {
             JOptionPane.showMessageDialog(this,

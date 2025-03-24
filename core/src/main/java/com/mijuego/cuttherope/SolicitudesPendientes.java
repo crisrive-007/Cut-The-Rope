@@ -25,12 +25,18 @@ public class SolicitudesPendientes extends JFrame {
     private DefaultListModel<String> modeloLista;
     private Usuario usuario;
     private Amigos amigos;
+    private String idioma;
+    private boolean español;
 
-    public SolicitudesPendientes(Usuario usuario, Amigos amigos) {
+    public SolicitudesPendientes(Usuario usuario, Amigos amigos, String idioma) {
         this.usuario = usuario;
         this.amigos = amigos;
+        this.idioma = idioma;
+        this.español = idioma.equals("es");
+        
+        String titulo = español ? "Solicitudes Pendientes" : "Pending Requests";
 
-        setTitle("Solicitudes Pendientes");
+        setTitle(titulo);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(400, 300);
         setLocationRelativeTo(null);
@@ -41,10 +47,13 @@ public class SolicitudesPendientes extends JFrame {
         JScrollPane scrollPane = new JScrollPane(listaSolicitudes);
 
         actualizarListaSolicitudes();
+        
+        String aceptar = español ? "Aceptar" : "Accept";
+        String rechazar = español ? "Rechazar" : "Decline";
 
         JPanel panelBotones = new JPanel();
-        JButton btnAceptar = new JButton("Aceptar");
-        JButton btnRechazar = new JButton("Rechazar");
+        JButton btnAceptar = new JButton(aceptar);
+        JButton btnRechazar = new JButton(rechazar);
 
         panelBotones.add(btnAceptar);
         panelBotones.add(btnRechazar);
@@ -70,7 +79,7 @@ public class SolicitudesPendientes extends JFrame {
     private void actualizarListaSolicitudes() {
         modeloLista.clear();
         for (Amigo solicitud : usuario.getAmigos()) {
-            if (!solicitud.isAceptado()) {
+            if (!solicitud.isAceptado() && (usuario.getNombreUsuario() == null ? solicitud.getAmigo().getNombreUsuario() != null : !usuario.getNombreUsuario().equals(solicitud.getAmigo().getNombreUsuario()))) {
                 modeloLista.addElement(solicitud.getAmigo().getNombreUsuario());
             }
         }
@@ -83,15 +92,17 @@ public class SolicitudesPendientes extends JFrame {
             for (Amigo solicitud : usuario.getAmigos()) {
                 if (solicitud.getAmigo().getNombreUsuario().equals(nombreAmigo) && !solicitud.isAceptado()) {
                     Control control = new Control();
-                    if (control.aceptarSolicitudAmistad(usuario.getNombreUsuario(), nombreAmigo)) {
-                        JOptionPane.showMessageDialog(this, "Solicitud aceptada.");
+                    if (control.aceptarSolicitudAmistad(usuario.getNombreUsuario(), nombreAmigo, idioma)) {
+                        String aceptada = español ? "Solicitud aceptada." : "Request accepted.";
+                        JOptionPane.showMessageDialog(this, aceptada);
                     }
                     actualizarListaSolicitudes();
                     amigos.actualizarListaAmigos();
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Seleccione una solicitud para aceptar.");
+            String texto = español ? "Seleccione una solicitud para aceptar." : "Select a request to accept.";
+            JOptionPane.showMessageDialog(this, texto);
         }
     }
 
@@ -108,10 +119,12 @@ public class SolicitudesPendientes extends JFrame {
             if (solicitudAEliminar != null) {
                 usuario.getAmigos().remove(solicitudAEliminar);  // Elimina la solicitud de la lista
                 actualizarListaSolicitudes();
-                JOptionPane.showMessageDialog(this, "Solicitud rechazada.");
+                String rechazada = español ? "Solicitud rechazada." : "Request declined.";
+                JOptionPane.showMessageDialog(this, rechazada);
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Seleccione una solicitud para rechazar.");
+            String texto = español ? "Seleccione una solicitud para rechazar." : "Select a request to decline.";
+            JOptionPane.showMessageDialog(this, texto);
         }
     }
 }

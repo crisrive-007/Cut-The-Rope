@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -48,7 +49,7 @@ public class MapaNiveles extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        background = new Texture(Gdx.files.internal("mapa_cuttherope.jpg"));
+        background = new Texture(Gdx.files.internal("mapa_cuttherope.png"));
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
@@ -73,32 +74,84 @@ public class MapaNiveles extends ScreenAdapter {
         level2Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Cambiar a la pantalla del Nivel 2
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador, idioma));
+                if (jugador.getProgresoJuego().isNivelCompletado(1)) {
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel2(jugador, idioma));
+                } else {
+                    Dialog dialog = new Dialog("Atencion", skin) {
+                        @Override
+                        protected void result(Object object) {
+                            if (object.equals("ok")) {
+                                System.out.println("Botón OK presionado");
+                            }
+                        }
+                    };
+                    dialog.text("Complete los niveles anteriores");
+                    dialog.button("OK", "ok");
+                    dialog.show(stage);
+                }
             }
         });
 
         level3Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Cambiar a la pantalla del Nivel 3
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador, idioma));
+                if (jugador.getProgresoJuego().isNivelCompletado(2)) {
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel3(jugador, idioma));
+                } else {
+                    Dialog dialog = new Dialog("Atencion", skin) {
+                        @Override
+                        protected void result(Object object) {
+                            if (object.equals("ok")) {
+                                System.out.println("Botón OK presionado");
+                            }
+                        }
+                    };
+                    dialog.text("Complete los niveles anteriores");
+                    dialog.button("OK", "ok");
+                    dialog.show(stage);
+                }
             }
         });
 
         level4Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Cambiar a la pantalla del Nivel 4
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel4(jugador, idioma));
+                if (jugador.getProgresoJuego().isNivelCompletado(3)) {
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel4(jugador, idioma));
+                } else {
+                    Dialog dialog = new Dialog("Atencion", skin) {
+                        @Override
+                        protected void result(Object object) {
+                            if (object.equals("ok")) {
+                                System.out.println("Botón OK presionado");
+                            }
+                        }
+                    };
+                    dialog.text("Complete los niveles anteriores");
+                    dialog.button("OK", "ok");
+                    dialog.show(stage);
+                }
             }
         });
 
         level5Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Cambiar a la pantalla del Nivel 5
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel5(jugador, idioma));
+                if (jugador.getProgresoJuego().isNivelCompletado(4)) {
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new Nivel5(jugador, idioma));
+                } else {
+                    Dialog dialog = new Dialog("Atencion", skin) {
+                        @Override
+                        protected void result(Object object) {
+                            if (object.equals("ok")) {
+                                System.out.println("Botón OK presionado");
+                            }
+                        }
+                    };
+                    dialog.text("Complete los niveles anteriores");
+                    dialog.button("OK", "ok");
+                    dialog.show(stage);
+                }
             }
         });
 
@@ -148,6 +201,8 @@ public class MapaNiveles extends ScreenAdapter {
     @Override
     public void hide() {
         stage.dispose();
+        background.dispose();
+        skin.dispose();
     }
 
     private Texture crearTexturaCircular(Color fillColor, Color borderColor, int diameter, int borderWidth) {

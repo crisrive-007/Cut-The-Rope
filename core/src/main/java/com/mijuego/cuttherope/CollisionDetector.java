@@ -4,6 +4,8 @@
  */
 package com.mijuego.cuttherope;
 
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -32,10 +35,12 @@ public class CollisionDetector extends Thread implements ContactListener {
     private final boolean[] starCollected;
     private final Rectangle[] starRectangles;
     private Set<Body> collidedRana;
+    private Usuario jugador;
+    private String idioma;
 
     private int puntos = 0;
 
-    public CollisionDetector(World world, Dulce dulce, OmNom omNom, Rectangle[] starRectangles, boolean[] starCollected, Array<Body> bodiesToRemove, Set<Body> collidedRana) {
+    public CollisionDetector(World world, Dulce dulce, OmNom omNom, Rectangle[] starRectangles, boolean[] starCollected, Array<Body> bodiesToRemove, Set<Body> collidedRana, Usuario jugador, String idioma) {
         this.world = world;
         this.dulce = dulce;
         this.omNom = omNom;
@@ -43,6 +48,8 @@ public class CollisionDetector extends Thread implements ContactListener {
         this.collidedStars = new HashSet<>();
         this.colisionDetectada = false;
         this.collidedRana = collidedRana;
+        this.jugador = jugador;
+        this.idioma = idioma;
         this.world.setContactListener(this);
         this.starRectangles = (starRectangles != null) ? starRectangles : new Rectangle[0];
         this.starCollected = (starCollected != null) ? starCollected : new boolean[0];
@@ -75,12 +82,15 @@ public class CollisionDetector extends Thread implements ContactListener {
         }
     }
 
-    private void dulceTocoEstrella(int starIndex) {
+    public void dulceTocoEstrella(int starIndex) {
         if (!collidedStars.contains(starIndex)) {
-            puntos += 1;
-            System.out.println("¡Colisión con estrella! Puntos: " + puntos);
             collidedStars.add(starIndex);
             starCollected[starIndex] = true;
+
+            Gdx.app.postRunnable(() -> {
+                puntos += 1;
+                System.out.println("¡Colisión con estrella! Puntos: " + puntos);
+            });
         }
     }
 
@@ -119,24 +129,41 @@ public class CollisionDetector extends Thread implements ContactListener {
 
     private void omNomComio(Body ranaBody) {
         if (!collidedRana.contains(ranaBody)) {
-            System.out.println("¡La rana se comió el dulce!");
-            if (dulce != null && dulce.getBody() != null) {
-                bodiesToRemove.add(dulce.getBody());
-            }
             collidedRana.add(ranaBody);
-            if (dulce != null) {
-                dulce.cortar();
-                dulce.dispose();
-                dulce = null;
-            }
 
-            omNom.setEatingTexture();
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    omNom.setNormalTexture();
+            Gdx.app.postRunnable(() -> {
+                System.out.println("¡La rana se comió el dulce!");
+
+                if (dulce != null && dulce.getBody() != null) {
+                    bodiesToRemove.add(dulce.getBody());
                 }
-            }, 0.09f);
+
+                if (dulce != null) {
+                    dulce.cortar();
+                    dulce.dispose();
+                    dulce = null;
+                }
+
+                omNom.setEatingTexture();
+
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        omNom.setNormalTexture();
+                        if (idioma.equals("es")) {
+                            JOptionPane.showMessageDialog(null, "¡Felicidades! Has ganado.\nEstrellas obtenidas:" + puntos);
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Congratulations! You won.\nStars obtained:" + puntos);
+                        }
+                        Control control = new Control();
+                        control.sumarPuntos(jugador.getNombreUsuario(), puntos);
+                        control.actualizarProgresoNivel(jugador.getNombreUsuario(), control.obtenerNivelActual(jugador.getNombreUsuario()) + 1, puntos, puntos);
+                        jugador.getProgresoJuego().completarNivel(jugador.getProgresoJuego().getNivelActual());
+                        jugador.getProgresoJuego().setNivelActual(jugador.getProgresoJuego().getNivelActual());
+                        Gdx.app.postRunnable(() -> ((Game) Gdx.app.getApplicationListener()).setScreen(new MapaNiveles(jugador, idioma)));
+                    }
+                }, 0.09f);
+            });
         }
     }
 

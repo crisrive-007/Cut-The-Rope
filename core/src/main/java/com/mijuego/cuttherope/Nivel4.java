@@ -127,7 +127,7 @@ public class Nivel4 implements Screen {
         // ⭐ Inicializar estrellas
         starCollected = new boolean[starTextures.length];
 
-        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana);
+        collisionDetector = new CollisionDetector(world, dulce, omNom, starRectangles, starCollected, bodiesToRemove, collidedRana, jugador, idioma);
         collisionDetector.start();
         world.setContactListener(collisionDetector);
 
@@ -218,7 +218,7 @@ public class Nivel4 implements Screen {
             Rectangle ballRect = new Rectangle(dulce.getBody().getPosition().x - 0.5f, dulce.getBody().getPosition().y - 0.5f, 1, 1);
             for (int i = 0; i < starRectangles.length; i++) {
                 if (!starCollected[i] && ballRect.overlaps(starRectangles[i])) {
-                    dulceTocoEstrella(i);
+                    collisionDetector.dulceTocoEstrella(i);
                 }
             }
         }

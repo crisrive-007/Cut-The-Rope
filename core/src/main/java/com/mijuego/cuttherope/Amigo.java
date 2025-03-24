@@ -61,7 +61,7 @@ public class Amigo implements Serializable {
     }
 
     public Date getFechaAceptacion() {
-        return new Date(fechaAceptacion);
+        return aceptado ? new Date(fechaAceptacion) : null;
     }
 
     public void setFechaAceptacion(long fechaAceptacion) {
@@ -83,9 +83,9 @@ public class Amigo implements Serializable {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-
         Amigo otroAmigo = (Amigo) obj;
-        return amigo != null && amigo.getNombreUsuario().equals(otroAmigo.amigo.getNombreUsuario());
+        return amigo != null && otroAmigo.amigo != null
+                && amigo.getNombreUsuario().equals(otroAmigo.amigo.getNombreUsuario());
     }
 
     @Override
@@ -95,8 +95,9 @@ public class Amigo implements Serializable {
 
     @Override
     public String toString() {
+        String nombreUsuario = (amigo != null) ? amigo.getNombreUsuario() : "null";
         return "Amigo{"
-                + "usuario=" + amigo.getNombreUsuario()
+                + "usuario=" + nombreUsuario
                 + ", aceptado=" + aceptado
                 + ", fechaSolicitud=" + new Date(fechaSolicitud)
                 + ", fechaAceptacion=" + (aceptado ? new Date(fechaAceptacion) : "pendiente")

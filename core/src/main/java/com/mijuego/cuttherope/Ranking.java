@@ -13,8 +13,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -43,11 +45,13 @@ public class Ranking implements Screen {
         this.español = idioma.equals("es");
         this.jugador = jugador;
         stage = new Stage();
+        BitmapFont font = new BitmapFont(Gdx.files.internal("fuente.fnt"), false);
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
         table = new Table();
         table.setFillParent(true);
-        table.top(); // Asegura que todo esté alineado a la parte superior
+        table.center();
 
         // Cargar fondo
         background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
@@ -55,10 +59,11 @@ public class Ranking implements Screen {
         // Crear el cuadro blanco central
         Drawable cuadroBlanco = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("pixel-blanco.jpg"))));
         Table cuadroRanking = new Table();
-        Cell<Table> center = table.add(cuadroRanking.center()).center();
         cuadroRanking.background(cuadroBlanco);
+        cuadroRanking.center(); // Centra la tabla dentro del escenario
+
+        // Ajustar tamaño de cuadroRanking a un porcentaje de la pantalla
         cuadroRanking.setSize(Gdx.graphics.getWidth() * 0.8f, Gdx.graphics.getHeight() * 0.8f);
-        cuadroRanking.center(); // Centra el cuadro en la pantalla
 
         // Cargar logo
         logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
@@ -69,7 +74,7 @@ public class Ranking implements Screen {
 
         // Título de la pantalla
         String title = español ? "Ranking de Jugadores" : "Ranking of Players";
-        Label titleLabel = new Label(title, skin);
+        Label titleLabel = new Label(title, labelStyle);
         cuadroRanking.add(titleLabel).colspan(2).padBottom(20);
         cuadroRanking.row();
 
@@ -82,9 +87,9 @@ public class Ranking implements Screen {
         String posicion = español ? "Posicion" : "Position";
         String jugad = español ? "jugador" : "Player";
         String puntos = español ? "Puntos" : "Points";
-        rankingTable.add(new Label(posicion, skin)).padRight(10);
-        rankingTable.add(new Label(jugad, skin)).padRight(10);
-        rankingTable.add(new Label(puntos, skin)).padBottom(10); // Si quieres mostrar los puntos, agrega esta columna
+        rankingTable.add(new Label(posicion, labelStyle)).padRight(10);
+        rankingTable.add(new Label(jugad, labelStyle)).padRight(10);
+        rankingTable.add(new Label(puntos, labelStyle)).padBottom(10); // Si quieres mostrar los puntos, agrega esta columna
         rankingTable.row().padBottom(10); // Separar los encabezados de las filas
 
         // Obtener el ranking de jugadores
@@ -93,9 +98,9 @@ public class Ranking implements Screen {
 
         // Mostrar el ranking
         for (String usuario : ranking) {
-            rankingTable.add(new Label(String.valueOf(pos), skin)).padRight(10);
-            rankingTable.add(new Label(usuario, skin)).padRight(10);
-            rankingTable.add(new Label("100", skin)); // Aquí puedes reemplazar "100" por los puntos reales de cada jugador
+            rankingTable.add(new Label(String.valueOf(pos), labelStyle)).padRight(10);
+            rankingTable.add(new Label(usuario, labelStyle)).padRight(10);
+            rankingTable.add(new Label("100", labelStyle)); // Aquí puedes reemplazar "100" por los puntos reales de cada jugador
             rankingTable.row().padBottom(10);
             pos++;
         }
@@ -117,9 +122,11 @@ public class Ranking implements Screen {
         // Añadir el botón dentro del cuadro blanco
         cuadroRanking.row().padTop(20); // Espaciado antes del botón
         cuadroRanking.add(backButton).colspan(2).center().padTop(20); // Botón centrado dentro del cuadro blanco
+        
+        table.add(cuadroRanking).center();
 
         // Añadir el cuadro blanco al escenario
-        stage.addActor(cuadroRanking);
+        stage.addActor(table); // Añadir el cuadroRanking al escenario
     }
 
     @Override

@@ -26,17 +26,17 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import java.util.Date;
-import javax.swing.JOptionPane;
 
 /**
  *
  * @author river
  */
 public class MiPerfil extends ScreenAdapter {
+
     private Stage stage;
     private Texture background, logoTexture;
-    private Skin skin;
     private TextButton exitButton;
+    private Skin skin;
     //private Usuarios jugador;
     private Usuario jugador;
     private String idioma;
@@ -55,15 +55,16 @@ public class MiPerfil extends ScreenAdapter {
 
         background = new Texture(Gdx.files.internal("fondo_cuttherope.jpg"));
         logoTexture = new Texture(Gdx.files.internal("Cut_the_Rope_Logo.png"));
-        
+
         BitmapFont font = new BitmapFont(Gdx.files.internal("fuente.fnt"), false);
         Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        
-        exitButton = new TextButton("Salir", skin);
 
         Image logoImage = new Image(logoTexture);
         logoImage.setSize(477, 209);  // Tamaño del logo
+        
+        String salir = español ? "Salir" : "Exit";
+        exitButton = new TextButton(salir, skin);
 
         // Crear las tablas
         Table mainTable = new Table();
@@ -101,7 +102,9 @@ public class MiPerfil extends ScreenAdapter {
         leftPanel.add(fechaRegistroLabel).padBottom(20).row();
         Label ultimaSesionLabel = new Label(sesion + new Date(jugador.getUltimaSesion()), labelStyle);
         leftPanel.add(ultimaSesionLabel).padBottom(20).row();
-        Label progresoJuegoLabel = new Label(progreso + jugador.getProgresoJuego(), labelStyle);
+        Control control = new Control();
+        String nivel = español ? "Nivel " : "Level ";
+        Label progresoJuegoLabel = new Label(progreso + nivel + jugador.getProgresoJuego().mostrarNivelesCompletados(), labelStyle);
         leftPanel.add(progresoJuegoLabel).padBottom(20).row();
         Label tiempoJugadoLabel = new Label(tiempo + jugador.getTiempoTotalJugado(), labelStyle);
         leftPanel.add(tiempoJugadoLabel).padBottom(20).row();
@@ -119,20 +122,12 @@ public class MiPerfil extends ScreenAdapter {
         TextButton cambiarImagenButton = new TextButton(cambiar, skin);
         TextButton eliminarCuentaButton = new TextButton(eliminar, skin);
         TextButton agregarAmigosButton = new TextButton(agregarAmigos, skin);
-        
-        exitButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                // Salir de la aplicación
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(jugador));
-            }
-        });
 
         // Acciones de los botones
         cambiarImagenButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                new SeleccionarImagen(jugador).setVisible(true);
+                new SeleccionarImagen(jugador, idioma).setVisible(true);
             }
         });
 
@@ -147,9 +142,21 @@ public class MiPerfil extends ScreenAdapter {
         agregarAmigosButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new Amigos(jugador));
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Amigos(jugador, idioma));
             }
         });
+        
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Salir de la aplicación
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new MenuJugador(jugador));
+            }
+        });
+        
+        stage.addActor(exitButton);
+        exitButton.setSize(80, 30);
+        exitButton.setPosition(10, 820);
 
         // Agregar la foto de perfil y los botones al panel derecho
         rightPanel.add(perfilImage).size(220, 220).padBottom(20).row();  // Foto de perfil
@@ -164,9 +171,6 @@ public class MiPerfil extends ScreenAdapter {
         mainTable.add(rightPanel).right();
 
         // Agregar la tabla principal al stage
-        stage.addActor(exitButton);
-        exitButton.setSize(80, 30);
-        exitButton.setPosition(10, 820);
     }
 
     @Override

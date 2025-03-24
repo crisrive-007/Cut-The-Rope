@@ -62,4 +62,15 @@ public class ProgresoJuego implements Serializable {
     public void agregarEstrellas(int estrellas) {
         this.estrellasTotales += estrellas;
     }
+
+    public String mostrarNivelesCompletados() {
+        System.out.println("Niveles completados:");
+        String niveles = "";
+        for (Map.Entry<Integer, Boolean> entry : nivelesCompletados.entrySet()) {
+            if (entry.getValue()) {
+                niveles = "Nivel " + entry.getKey() + " completado";
+            }
+        }
+        return niveles;
+    }
 }
