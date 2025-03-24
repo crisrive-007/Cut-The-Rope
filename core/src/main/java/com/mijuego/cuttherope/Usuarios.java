@@ -13,6 +13,7 @@ public class Usuarios implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    
     private String identificadorUnico;
     private String contraseña;
     private String nombreCompleto;

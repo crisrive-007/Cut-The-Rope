@@ -24,11 +24,11 @@ public class Cuerda {
     private float thickness;
     private boolean isCortada;
 
-    // Cuerpos y conexiones para la simulación de la cuerda
-    private Body anchorBody; // Cuerpo del gancho
-    private Body[] segmentBodies; // Segmentos de la cuerda
-    private Joint[] joints; // Articulaciones entre segmentos
-    private int numSegments; // Número de segmentos de la cuerda
+    
+    private Body anchorBody; 
+    private Body[] segmentBodies; 
+    private Joint[] joints; 
+    private int numSegments; 
 
     // Textura para dibujar
     private Texture cuerdaTextura;
@@ -168,43 +168,36 @@ public class Cuerda {
     }
 
     public boolean detectarToque(Vector2 punteroPos) {
-        // Comprobar si alguno de los segmentos ha sido tocado
-        for (Body segmentBody : segmentBodies) {
-            // Obtener la posición y ángulo del segmento
-            Vector2 position = segmentBody.getPosition();
-            float angle = segmentBody.getAngle();
+    float segmentLength = longitud / numSegments;
+    float thicknessSquared = thickness * thickness; // Evita cálculos de raíz cuadrada innecesarios
 
-            // Longitud del segmento
-            float segmentLength = longitud / numSegments;
+    for (Body segmentBody : segmentBodies) {
+        Vector2 position = segmentBody.getPosition();
+        float angle = segmentBody.getAngle();
 
-            // Calcular puntos inicial y final del segmento considerando la rotación
-            // Crear vectores de desplazamiento basados en el ángulo
-            Vector2 offset = new Vector2(0, segmentLength / 2).rotateRad(angle);
+        // Calcular puntos inicial y final del segmento
+        Vector2 offset = new Vector2(0, segmentLength / 2).rotateRad(angle);
+        Vector2 start = position.cpy().add(offset);
+        Vector2 end = position.cpy().sub(offset);
 
-            // Puntos inicial y final considerando la rotación
-            Vector2 start = new Vector2(position).add(offset);
-            Vector2 end = new Vector2(position).sub(offset);
+        // Vector dirección del segmento normalizado
+        Vector2 segmentDir = end.cpy().sub(start).nor();
+        Vector2 toPunteroPos = punteroPos.cpy().sub(start);
 
-            // Calcular la distancia del puntero a la línea del segmento
-            // Vector dirección del segmento
-            Vector2 segmentDir = new Vector2(end).sub(start).nor();
-            Vector2 toPunteroPos = new Vector2(punteroPos).sub(start);
+        // Proyección de toPunteroPos sobre segmentDir
+        float proj = MathUtils.clamp(toPunteroPos.dot(segmentDir), 0, start.dst(end));
 
-            // Proyección del vector toPunteroPos sobre segmentDir
-            float proj = toPunteroPos.dot(segmentDir);
-            proj = MathUtils.clamp(proj, 0, end.dst(start));
+        // Punto más cercano en el segmento
+        Vector2 closestPoint = start.cpy().add(segmentDir.scl(proj));
 
-            // Punto más cercano en el segmento al puntero
-            Vector2 closestPoint = new Vector2(start).add(new Vector2(segmentDir).scl(proj));
-            float distance = closestPoint.dst(punteroPos);
-
-            // Si la distancia es menor que el grosor, la cuerda fue tocada
-            if (distance < thickness) {
-                return true;
-            }
+        // Si la distancia al cuadrado es menor que el grosor², la cuerda fue tocada
+        if (closestPoint.dst2(punteroPos) < thicknessSquared) {
+            return true;
         }
-        return false;
     }
+    return false;
+}
+
 
     public void dispose() {
         if (cuerdaTextura != null) {

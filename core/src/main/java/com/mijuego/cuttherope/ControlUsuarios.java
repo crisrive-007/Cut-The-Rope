@@ -116,4 +116,45 @@ public class ControlUsuarios implements Serializable {
             }
         }
     }
+    
+    public void buscarYActualizarUsuario(String identificadorUnico, Usuarios nuevosDatos) throws IOException {
+    archivoUsuarios.seek(0);
+    
+    while (archivoUsuarios.getFilePointer() < archivoUsuarios.length()) {
+        long posicionInicio = archivoUsuarios.getFilePointer(); 
+        
+        String idUsuario = archivoUsuarios.readUTF();
+        archivoUsuarios.readUTF(); 
+        archivoUsuarios.readUTF(); 
+        archivoUsuarios.readLong(); 
+        archivoUsuarios.readLong(); 
+        archivoUsuarios.readInt();  
+        archivoUsuarios.readInt();  
+        archivoUsuarios.readUTF();  
+        archivoUsuarios.readUTF();  
+        archivoUsuarios.readUTF();  
+        archivoUsuarios.readInt();  
+        archivoUsuarios.readUTF(); 
+        
+        if (idUsuario.equals(identificadorUnico)) {
+            archivoUsuarios.seek(posicionInicio); 
+            
+            archivoUsuarios.writeUTF(nuevosDatos.getIdentificadorUnico());
+            archivoUsuarios.writeUTF(nuevosDatos.getContraseña());
+            archivoUsuarios.writeUTF(nuevosDatos.getNombreCompleto());
+            archivoUsuarios.writeLong(nuevosDatos.getFechaRegistro().getTime());
+            archivoUsuarios.writeLong(nuevosDatos.getUltimaSesion() != null ? nuevosDatos.getUltimaSesion().getTime() : 0);
+            archivoUsuarios.writeInt(nuevosDatos.getProgresoJuego());
+            archivoUsuarios.writeInt(nuevosDatos.getTiempoTotalJugado());
+            archivoUsuarios.writeUTF(nuevosDatos.getHistorialPartidas());
+            archivoUsuarios.writeUTF(nuevosDatos.getPreferenciasJuego());
+            archivoUsuarios.writeUTF(nuevosDatos.getAvatar());
+            archivoUsuarios.writeInt(nuevosDatos.getRanking());
+            archivoUsuarios.writeUTF(nuevosDatos.getAmigos());
+            
+            break; 
+        }
+    }
+}
+
 }
